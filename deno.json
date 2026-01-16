@@ -1,0 +1,22 @@
+{
+  "name": "@ens-agent/mcp-server",
+  "version": "0.1.0",
+  "tasks": {
+    "dev": "deno run --allow-net --allow-env --allow-read src/main.ts",
+    "test": "deno test --allow-net --allow-env --allow-read"
+  },
+  "imports": {
+    "@ensdomains/ensjs": "npm:@ensdomains/ensjs@4",
+    "@ensdomains/ensjs/public": "npm:@ensdomains/ensjs@4/public",
+    "@ensdomains/ensjs/wallet": "npm:@ensdomains/ensjs@4/wallet",
+    "viem": "npm:viem@2",
+    "viem/chains": "npm:viem@2/chains",
+    "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@1",
+    "@modelcontextprotocol/sdk/server/index.js": "npm:@modelcontextprotocol/sdk@1/server/index.js",
+    "@modelcontextprotocol/sdk/server/stdio.js": "npm:@modelcontextprotocol/sdk@1/server/stdio.js",
+    "zod": "npm:zod@3"
+  },
+  "compilerOptions": {
+    "strict": true
+  }
+}
