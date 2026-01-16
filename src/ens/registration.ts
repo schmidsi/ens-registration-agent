@@ -1,8 +1,10 @@
 import { commitName, registerName as ensRegisterName } from "@ensdomains/ensjs/wallet";
-import { getPrice } from "@ensdomains/ensjs/public";
+import { getPrice, getAddressRecord } from "@ensdomains/ensjs/public";
 import { isAddress, type Address, type Hex } from "viem";
 import { createEnsClient, createEnsWalletClient, getConfigFromEnv, type SupportedNetwork } from "./client.ts";
 import { validateName, SECONDS_PER_YEAR } from "./utils.ts";
+
+type EnsClient = ReturnType<typeof createEnsClient>;
 
 export interface RegistrationResult {
   name: string;
@@ -26,6 +28,27 @@ function generateSecret(): Hex {
  */
 function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Resolve owner to an address. Accepts either an Ethereum address or an ENS name.
+ */
+async function resolveOwner(owner: string, client: EnsClient): Promise<Address> {
+  // If it's already a valid address, return it
+  if (isAddress(owner)) {
+    return owner;
+  }
+
+  // If it looks like an ENS name, try to resolve it
+  if (owner.endsWith(".eth")) {
+    const result = await getAddressRecord(client, { name: owner });
+    if (result?.value) {
+      return result.value as Address;
+    }
+    throw new Error(`Could not resolve ENS name: ${owner}`);
+  }
+
+  throw new Error("Invalid owner address");
 }
 
 /**
@@ -59,10 +82,6 @@ export async function registerName(
     throw new Error("Duration must be positive");
   }
 
-  if (!isAddress(owner)) {
-    throw new Error("Invalid owner address");
-  }
-
   // Get config from environment
   const config = getConfigFromEnv();
 
@@ -82,6 +101,9 @@ export async function registerName(
   const publicClient = createEnsClient(selectedNetwork, selectedRpcUrl);
   const walletClient = createEnsWalletClient(privateKey, selectedNetwork, selectedRpcUrl);
 
+  // Resolve owner (accepts address or ENS name)
+  const resolvedOwner = await resolveOwner(owner, publicClient);
+
   const validatedName = validateName(name);
   const durationSeconds = Math.floor(years * SECONDS_PER_YEAR);
   const secret = generateSecret();
@@ -89,7 +111,7 @@ export async function registerName(
   // Step 1: Commit
   const commitTxHash = await commitName(walletClient, {
     name: validatedName,
-    owner: owner as Address,
+    owner: resolvedOwner,
     duration: durationSeconds,
     secret,
   });
@@ -115,7 +137,7 @@ export async function registerName(
   // Step 4: Register
   const registerTxHash = await ensRegisterName(walletClient, {
     name: validatedName,
-    owner: owner as Address,
+    owner: resolvedOwner,
     duration: durationSeconds,
     secret,
     value,
@@ -126,7 +148,7 @@ export async function registerName(
 
   return {
     name: validatedName,
-    owner: owner as Address,
+    owner: resolvedOwner,
     duration: durationSeconds,
     commitTxHash,
     registerTxHash,
