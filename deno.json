@@ -15,7 +15,8 @@
     "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@1",
     "@modelcontextprotocol/sdk/server/index.js": "npm:@modelcontextprotocol/sdk@1/server/index.js",
     "@modelcontextprotocol/sdk/server/stdio.js": "npm:@modelcontextprotocol/sdk@1/server/stdio.js",
-    "zod": "npm:zod@3"
+    "zod": "npm:zod@3",
+    "@std/assert": "jsr:@std/assert@1"
   },
   "compilerOptions": {
     "strict": true

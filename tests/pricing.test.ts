@@ -1,4 +1,4 @@
-import { assertEquals, assertGreater } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals, assertGreater, assertRejects } from "@std/assert";
 import { getRegistrationPrice } from "../src/ens/pricing.ts";
 
 Deno.test("getRegistrationPrice returns price for 1 year registration", async () => {
@@ -10,10 +10,14 @@ Deno.test("getRegistrationPrice returns price for 1 year registration", async ()
   assertEquals(typeof result.premium, "bigint");
 });
 
-Deno.test("getRegistrationPrice handles name without .eth suffix", async () => {
-  const result = await getRegistrationPrice("test12345", 1);
-
-  assertGreater(result.base, 0n);
+Deno.test("getRegistrationPrice throws for name without .eth suffix", async () => {
+  await assertRejects(
+    async () => {
+      await getRegistrationPrice("test12345", 1);
+    },
+    Error,
+    ".eth"
+  );
 });
 
 Deno.test("getRegistrationPrice returns higher price for shorter names", async () => {

@@ -16,7 +16,7 @@ server.tool(
   "checkAvailability",
   "Check if an ENS name is available for registration",
   {
-    name: z.string().describe("The ENS name to check (with or without .eth suffix)"),
+    name: z.string().describe("The ENS name to check (must end with .eth)"),
   },
   async ({ name }) => {
     try {
@@ -50,8 +50,8 @@ server.tool(
   "getRegistrationPrice",
   "Get the price for registering an ENS name for a specified duration",
   {
-    name: z.string().describe("The ENS name to check (with or without .eth suffix)"),
-    years: z.number().min(1).default(1).describe("Number of years to register for (default: 1)"),
+    name: z.string().describe("The ENS name to check (must end with .eth)"),
+    years: z.number().positive().default(1).describe("Duration in years (default: 1, can be fractional like 0.5 for 6 months)"),
   },
   async ({ name, years }) => {
     try {
@@ -93,8 +93,8 @@ server.tool(
   "registerName",
   "Register an ENS name. Requires PRIVATE_KEY environment variable. This performs a two-step commit-reveal process and may take ~60 seconds.",
   {
-    name: z.string().describe("The ENS name to register (with or without .eth suffix)"),
-    years: z.number().min(1).default(1).describe("Number of years to register for (default: 1)"),
+    name: z.string().describe("The ENS name to register (must end with .eth)"),
+    years: z.number().positive().default(1).describe("Duration in years (default: 1, can be fractional like 0.5 for 6 months)"),
     owner: z.string().describe("Ethereum address that will own the name"),
   },
   async ({ name, years, owner }) => {

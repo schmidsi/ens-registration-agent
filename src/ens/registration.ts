@@ -2,7 +2,7 @@ import { commitName, registerName as ensRegisterName } from "@ensdomains/ensjs/w
 import { getPrice } from "@ensdomains/ensjs/public";
 import { isAddress, type Address, type Hex } from "viem";
 import { createEnsClient, createEnsWalletClient, getConfigFromEnv, type SupportedNetwork } from "./client.ts";
-import { normalizeName, SECONDS_PER_YEAR } from "./utils.ts";
+import { validateName, SECONDS_PER_YEAR } from "./utils.ts";
 
 export interface RegistrationResult {
   name: string;
@@ -56,7 +56,7 @@ export async function registerName(
   }
 
   if (years <= 0) {
-    throw new Error("Duration must be at least 1 year");
+    throw new Error("Duration must be positive");
   }
 
   if (!isAddress(owner)) {
@@ -65,26 +65,30 @@ export async function registerName(
 
   // Get config from environment
   const config = getConfigFromEnv();
-  const privateKey = config.privateKey;
 
+  const selectedRpcUrl = rpcUrl ?? config.rpcUrl;
+  if (!selectedRpcUrl) {
+    throw new Error("RPC_URL environment variable is required for registration");
+  }
+
+  const privateKey = config.privateKey;
   if (!privateKey) {
     throw new Error("PRIVATE_KEY environment variable is required for registration");
   }
 
   const selectedNetwork = network ?? config.network;
-  const selectedRpcUrl = rpcUrl ?? config.rpcUrl;
 
   // Create clients
   const publicClient = createEnsClient(selectedNetwork, selectedRpcUrl);
   const walletClient = createEnsWalletClient(privateKey, selectedNetwork, selectedRpcUrl);
 
-  const normalizedName = normalizeName(name);
+  const validatedName = validateName(name);
   const durationSeconds = Math.floor(years * SECONDS_PER_YEAR);
   const secret = generateSecret();
 
   // Step 1: Commit
   const commitTxHash = await commitName(walletClient, {
-    name: normalizedName,
+    name: validatedName,
     owner: owner as Address,
     duration: durationSeconds,
     secret,
@@ -100,7 +104,7 @@ export async function registerName(
 
   // Step 3: Get price for registration
   const price = await getPrice(publicClient, {
-    nameOrNames: normalizedName,
+    nameOrNames: validatedName,
     duration: durationSeconds,
   });
 
@@ -109,7 +113,7 @@ export async function registerName(
 
   // Step 4: Register
   const registerTxHash = await ensRegisterName(walletClient, {
-    name: normalizedName,
+    name: validatedName,
     owner: owner as Address,
     duration: durationSeconds,
     secret,
@@ -120,7 +124,7 @@ export async function registerName(
   await publicClient.waitForTransactionReceipt({ hash: registerTxHash });
 
   return {
-    name: normalizedName,
+    name: validatedName,
     owner: owner as Address,
     duration: durationSeconds,
     commitTxHash,

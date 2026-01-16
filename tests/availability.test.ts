@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals, assertRejects } from "@std/assert";
 import { checkAvailability } from "../src/ens/availability.ts";
 
 Deno.test("checkAvailability returns true for unregistered name", async () => {
@@ -13,7 +13,12 @@ Deno.test("checkAvailability returns false for registered name", async () => {
   assertEquals(result, false);
 });
 
-Deno.test("checkAvailability handles name without .eth suffix", async () => {
-  const result = await checkAvailability("vitalik");
-  assertEquals(result, false);
+Deno.test("checkAvailability throws for name without .eth suffix", async () => {
+  await assertRejects(
+    async () => {
+      await checkAvailability("vitalik");
+    },
+    Error,
+    ".eth"
+  );
 });

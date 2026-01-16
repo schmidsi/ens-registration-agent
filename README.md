@@ -53,7 +53,7 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 Check if an ENS name is available for registration.
 
 **Input:**
-- `name` (string): ENS name (with or without .eth suffix)
+- `name` (string): ENS name (must end with .eth)
 
 **Output:**
 ```json
@@ -64,7 +64,7 @@ Check if an ENS name is available for registration.
 Get the price for registering an ENS name.
 
 **Input:**
-- `name` (string): ENS name (with or without .eth suffix)
+- `name` (string): ENS name (must end with .eth)
 - `years` (number, default: 1): Registration duration
 
 **Output:**
@@ -83,7 +83,7 @@ Get the price for registering an ENS name.
 Register an ENS name. Requires `PRIVATE_KEY` environment variable.
 
 **Input:**
-- `name` (string): ENS name (with or without .eth suffix)
+- `name` (string): ENS name (must end with .eth)
 - `years` (number, default: 1): Registration duration
 - `owner` (string): Ethereum address that will own the name
 
@@ -115,7 +115,7 @@ Register an ENS name. Requires `PRIVATE_KEY` environment variable.
 
 ## Project Structure
 ```
-montevideo/
+ens-registration-agent/
 ├── deno.json           # Deno config + imports
 ├── .env.example        # Required env vars
 ├── src/
