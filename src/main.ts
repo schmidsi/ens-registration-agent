@@ -2,6 +2,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { checkAvailability } from "./ens/availability.ts";
+import { getRegistrationPrice } from "./ens/pricing.ts";
+import { formatEther } from "viem";
 
 const server = new McpServer({
   name: "ens-agent",
@@ -23,6 +25,49 @@ server.tool(
           {
             type: "text",
             text: JSON.stringify({ name, available }),
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              error: error instanceof Error ? error.message : "Unknown error",
+            }),
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Register the getRegistrationPrice tool
+server.tool(
+  "getRegistrationPrice",
+  "Get the price for registering an ENS name for a specified duration",
+  {
+    name: z.string().describe("The ENS name to check (with or without .eth suffix)"),
+    years: z.number().min(1).default(1).describe("Number of years to register for (default: 1)"),
+  },
+  async ({ name, years }) => {
+    try {
+      const price = await getRegistrationPrice(name, years);
+      const totalWei = price.base + price.premium;
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              name,
+              years,
+              baseWei: price.base.toString(),
+              premiumWei: price.premium.toString(),
+              totalWei: totalWei.toString(),
+              totalEth: formatEther(totalWei),
+            }),
           },
         ],
       };
