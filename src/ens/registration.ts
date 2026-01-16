@@ -97,9 +97,10 @@ export async function registerName(
   // Wait for commit transaction to be mined
   await publicClient.waitForTransactionReceipt({ hash: commitTxHash });
 
-  // Step 2: Wait for commitment period (minimum 60 seconds on mainnet)
+  // Step 2: Wait for commitment period (minimum 60 seconds on all networks)
   // Add a small buffer
-  const commitmentWaitTime = selectedNetwork === "sepolia" ? 10_000 : 65_000;
+  const commitmentWaitTime = 65_000;
+  console.error(`Waiting ${commitmentWaitTime / 1000}s for commitment to mature...`);
   await delay(commitmentWaitTime);
 
   // Step 3: Get price for registration
