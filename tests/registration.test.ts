@@ -47,6 +47,17 @@ Deno.test("registerName resolves ENS name as owner", async () => {
       await registerName("testname.eth", 1, "nonexistent-name-12345.eth");
     },
     Error,
-    "Could not resolve ENS name"
+    "Could not resolve"
+  );
+});
+
+Deno.test("registerName resolves non-.eth ENS names as owner", async () => {
+  // Any domain that doesn't resolve should throw (not just .eth)
+  await assertRejects(
+    async () => {
+      await registerName("testname.eth", 1, "nonexistent-domain.xyz");
+    },
+    Error,
+    "Could not resolve"
   );
 });
