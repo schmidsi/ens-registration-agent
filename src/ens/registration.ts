@@ -31,7 +31,7 @@ function delay(ms: number): Promise<void> {
 }
 
 /**
- * Resolve owner to an address. Accepts either an Ethereum address or an ENS name.
+ * Resolve owner to an address. Accepts either an Ethereum address or any ENS-resolvable name.
  */
 async function resolveOwner(owner: string, client: EnsClient): Promise<Address> {
   // If it's already a valid address, return it
@@ -39,16 +39,12 @@ async function resolveOwner(owner: string, client: EnsClient): Promise<Address> 
     return owner;
   }
 
-  // If it looks like an ENS name, try to resolve it
-  if (owner.endsWith(".eth")) {
-    const result = await getAddressRecord(client, { name: owner });
-    if (result?.value) {
-      return result.value as Address;
-    }
-    throw new Error(`Could not resolve ENS name: ${owner}`);
+  // Try to resolve as ENS name (supports any TLD: .eth, .xyz, .com, etc.)
+  const result = await getAddressRecord(client, { name: owner });
+  if (result?.value) {
+    return result.value as Address;
   }
-
-  throw new Error("Invalid owner address");
+  throw new Error(`Could not resolve: ${owner}`);
 }
 
 /**
