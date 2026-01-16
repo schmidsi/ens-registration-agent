@@ -85,7 +85,7 @@ Register an ENS name. Requires `PRIVATE_KEY` environment variable.
 **Input:**
 - `name` (string): ENS name (must end with .eth)
 - `years` (number, default: 1): Registration duration
-- `owner` (string): Ethereum address that will own the name
+- `owner` (string): Owner - accepts Ethereum address (0x...) or ENS name (vitalik.eth)
 
 **Output:**
 ```json
