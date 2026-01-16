@@ -39,3 +39,14 @@ Deno.test("registerName validates owner address", async () => {
     Error
   );
 });
+
+Deno.test("registerName resolves ENS name as owner", async () => {
+  // ENS name that doesn't resolve should throw with specific message
+  await assertRejects(
+    async () => {
+      await registerName("testname.eth", 1, "nonexistent-name-12345.eth");
+    },
+    Error,
+    "Could not resolve ENS name"
+  );
+});
