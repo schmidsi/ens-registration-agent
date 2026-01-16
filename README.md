@@ -1,24 +1,117 @@
 # ENS Registration Agent - MCP Server
 
-An MCP server that exposes ENS registration capabilities to other AI agents, with x402 payment integration for charging callers.
+An MCP server that exposes ENS registration capabilities to other AI agents.
 
-## Decisions Made
-- **Tech**: Deno (accept Claude Code Cloud limitation)
-- **Network**: Support both mainnet and Sepolia via config
-- **Payment model**: Agent charges callers via x402, uses its own ETH for ENS fees
-- **First tool**: `checkAvailability` (simplest, read-only)
+## Status: MVP Complete
+
+All three core MCP tools are implemented and tested:
+- `checkAvailability` - Check if an ENS name is available
+- `getRegistrationPrice` - Get the price for registering an ENS name
+- `registerName` - Register an ENS name (commit-reveal process)
+
+## Quick Start
+
+### Prerequisites
+- [Deno 2.x](https://deno.land/)
+
+### Run Tests
+```bash
+deno task test
+```
+
+### Start MCP Server
+```bash
+# Copy and configure environment
+cp .env.example .env
+# Edit .env with your RPC_URL and optionally PRIVATE_KEY
+
+# Start the server
+deno task dev
+```
+
+### Configure with Claude Desktop
+Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "ens-agent": {
+      "command": "deno",
+      "args": ["run", "--allow-net", "--allow-env", "--allow-read", "/path/to/montevideo/src/main.ts"],
+      "env": {
+        "NETWORK": "mainnet",
+        "RPC_URL": "https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
+
+## MCP Tools
+
+### checkAvailability
+Check if an ENS name is available for registration.
+
+**Input:**
+- `name` (string): ENS name (with or without .eth suffix)
+
+**Output:**
+```json
+{ "name": "example.eth", "available": true }
+```
+
+### getRegistrationPrice
+Get the price for registering an ENS name.
+
+**Input:**
+- `name` (string): ENS name (with or without .eth suffix)
+- `years` (number, default: 1): Registration duration
+
+**Output:**
+```json
+{
+  "name": "example.eth",
+  "years": 1,
+  "baseWei": "3155760000000000",
+  "premiumWei": "0",
+  "totalWei": "3155760000000000",
+  "totalEth": "0.00315576"
+}
+```
+
+### registerName
+Register an ENS name. Requires `PRIVATE_KEY` environment variable.
+
+**Input:**
+- `name` (string): ENS name (with or without .eth suffix)
+- `years` (number, default: 1): Registration duration
+- `owner` (string): Ethereum address that will own the name
+
+**Output:**
+```json
+{
+  "success": true,
+  "name": "example.eth",
+  "owner": "0x...",
+  "durationSeconds": 31536000,
+  "commitTxHash": "0x...",
+  "registerTxHash": "0x..."
+}
+```
+
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `NETWORK` | No | `mainnet` (default) or `sepolia` |
+| `RPC_URL` | No | RPC endpoint (uses public if not set) |
+| `PRIVATE_KEY` | For registerName | Wallet private key for transactions |
 
 ## Tech Stack
 - **Runtime**: Deno 2.x
-- **ENS**: `npm:@ensdomains/ensjs` + `npm:viem`
-- **MCP**: `npm:@modelcontextprotocol/sdk`
-- **x402**: `npm:@x402/hono` (Deno-friendly)
+- **ENS**: @ensdomains/ensjs v4 + viem v2
+- **MCP**: @modelcontextprotocol/sdk v1
 - **Testing**: Deno's built-in test runner
-
-## MVP Tools
-1. `checkAvailability(name)` → boolean
-2. `getRegistrationPrice(name, durationYears)` → price in ETH
-3. `registerName(name, durationYears, ownerAddress)` → tx hash
 
 ## Project Structure
 ```
@@ -27,73 +120,28 @@ montevideo/
 ├── .env.example        # Required env vars
 ├── src/
 │   ├── main.ts         # MCP server entry point
-│   ├── ens/
-│   │   ├── client.ts   # ENS client setup
-│   │   ├── availability.ts
-│   │   ├── pricing.ts
-│   │   └── registration.ts
-│   └── tools/
-│       ├── checkAvailability.ts
-│       ├── getPrice.ts
-│       └── registerName.ts
+│   └── ens/
+│       ├── client.ts   # ENS client setup
+│       ├── availability.ts
+│       ├── pricing.ts
+│       ├── registration.ts
+│       └── utils.ts
 └── tests/
     ├── availability.test.ts
     ├── pricing.test.ts
     └── registration.test.ts
 ```
 
-## Implementation Plan (TDD)
-
-### Phase 1: Project Setup
-1. Initialize `deno.json` with dependencies
-2. Create `.env.example` with required vars (RPC_URL, PRIVATE_KEY, NETWORK)
-3. **Commit**: "chore: initialize Deno project"
-
-### Phase 2: Check Availability Tool
-1. Write failing test for `checkAvailability`
-2. **Commit**: "test: add failing test for checkAvailability"
-3. Implement ENS client setup (`src/ens/client.ts`)
-4. Implement `checkAvailability` function
-5. **Commit**: "feat: implement checkAvailability"
-6. Refactor if needed
-7. **Commit**: "refactor: ..." (if applicable)
-
-### Phase 3: MCP Server with First Tool
-1. Write failing test for MCP tool registration
-2. **Commit**: "test: add failing test for MCP checkAvailability tool"
-3. Create MCP server with `checkAvailability` tool
-4. **Commit**: "feat: add MCP server with checkAvailability tool"
-5. Test manually with Claude Desktop or MCP client
-
-### Phase 4: Get Price Tool (same TDD pattern)
-1. Test → Commit
-2. Implement → Commit
-3. Refactor → Commit
-
-### Phase 5: Register Name Tool (same TDD pattern)
-1. Test → Commit
-2. Implement commit + wait + register flow → Commit
-3. Refactor → Commit
-
-### Phase 6: x402 Integration (later)
-- Add payment middleware
-- Configure pricing for each tool
-
-## Environment Variables
-```
-NETWORK=mainnet|sepolia
-RPC_URL=https://...
-PRIVATE_KEY=0x... (for registration)
-```
-
-## Verification
-1. Run tests: `deno test`
-2. Start server: `deno run --allow-net --allow-env src/main.ts`
-3. Test with MCP Inspector or Claude Desktop
-4. Verify on-chain results via Etherscan
+## Next Steps
+- [ ] x402 payment integration for charging callers
+- [ ] Add to ERC-8004 registry
+- [ ] ENS name for the agent (ens-agent.ses.eth)
+- [ ] Extend existing names feature
+- [ ] Base names / Celo names support
+- [ ] Name suggestions
 
 ## Resources
-- [Viem Deno compatibility](https://viem.sh/docs/compatibility)
-- [MCP with Deno](https://www.shruggingface.com/microblog/2024/12/02/exploring-the-model-context-protocol-with-deno-2-and-playwright)
-- [x402 GitHub](https://github.com/coinbase/x402)
-- [ensjs docs](https://github.com/ensdomains/ensjs)
+- [ENS Documentation](https://docs.ens.domains/)
+- [MCP Protocol](https://modelcontextprotocol.io/)
+- [x402 Payments](https://www.x402.org/)
+- [ERC-8004](https://ai.ethereum.foundation/blog/intro-erc-8004)
