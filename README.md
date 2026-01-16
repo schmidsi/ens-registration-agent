@@ -132,6 +132,23 @@ ens-registration-agent/
     └── registration.test.ts
 ```
 
+## Contributing
+
+Follow TDD (Test-Driven Development) with small, atomic commits:
+
+1. **Write a failing test** → commit
+2. **Make the test pass** → commit
+3. **Refactor if needed** → commit
+
+Each commit should be independently revertible. Keep changes small and focused.
+
+### Commit messages
+- `test: add failing test for X`
+- `feat: implement X`
+- `refactor: extract Y into Z`
+- `fix: handle edge case in X`
+- `chore: update dependencies`
+
 ## Next Steps
 - [ ] x402 payment integration for charging callers
 - [ ] Add to ERC-8004 registry
