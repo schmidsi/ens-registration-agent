@@ -1,12 +1,6 @@
 import { getAvailable } from "@ensdomains/ensjs/public";
 import { createEnsClient, getConfigFromEnv, type SupportedNetwork } from "./client.ts";
-
-/**
- * Normalize ENS name by ensuring it has .eth suffix.
- */
-function normalizeName(name: string): string {
-  return name.endsWith(".eth") ? name : `${name}.eth`;
-}
+import { normalizeName } from "./utils.ts";
 
 /**
  * Check if an ENS name is available for registration.

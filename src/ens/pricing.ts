@@ -1,18 +1,10 @@
 import { getPrice } from "@ensdomains/ensjs/public";
 import { createEnsClient, getConfigFromEnv, type SupportedNetwork } from "./client.ts";
+import { normalizeName, SECONDS_PER_YEAR } from "./utils.ts";
 
 export interface RegistrationPrice {
   base: bigint;
   premium: bigint;
-}
-
-const SECONDS_PER_YEAR = 31536000;
-
-/**
- * Normalize ENS name by ensuring it has .eth suffix.
- */
-function normalizeName(name: string): string {
-  return name.endsWith(".eth") ? name : `${name}.eth`;
 }
 
 /**
