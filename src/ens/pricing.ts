@@ -1,8 +1,18 @@
-import type { SupportedNetwork } from "./client.ts";
+import { getPrice } from "@ensdomains/ensjs/public";
+import { createEnsClient, getConfigFromEnv, type SupportedNetwork } from "./client.ts";
 
 export interface RegistrationPrice {
   base: bigint;
   premium: bigint;
+}
+
+const SECONDS_PER_YEAR = 31536000;
+
+/**
+ * Normalize ENS name by ensuring it has .eth suffix.
+ */
+function normalizeName(name: string): string {
+  return name.endsWith(".eth") ? name : `${name}.eth`;
 }
 
 /**
@@ -14,11 +24,23 @@ export interface RegistrationPrice {
  * @returns Object with base and premium prices in wei
  */
 export async function getRegistrationPrice(
-  _name: string,
-  _years: number,
-  _network?: SupportedNetwork,
-  _rpcUrl?: string
+  name: string,
+  years: number,
+  network?: SupportedNetwork,
+  rpcUrl?: string
 ): Promise<RegistrationPrice> {
-  // TODO: Implement using ensjs
-  throw new Error("Not implemented");
+  const config = getConfigFromEnv();
+  const client = createEnsClient(network ?? config.network, rpcUrl ?? config.rpcUrl);
+  const normalizedName = normalizeName(name);
+  const durationSeconds = Math.floor(years * SECONDS_PER_YEAR);
+
+  const result = await getPrice(client, {
+    nameOrNames: normalizedName,
+    duration: durationSeconds,
+  });
+
+  return {
+    base: result.base,
+    premium: result.premium,
+  };
 }
