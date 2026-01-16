@@ -58,6 +58,7 @@ async function resolveOwner(owner: string, client: EnsClient): Promise<Address> 
  * @param name - The ENS name to register (with or without .eth suffix)
  * @param years - Number of years to register for
  * @param owner - Address that will own the name
+ * @param maxPrice - Maximum price in wei we're willing to pay (safety check before commit)
  * @param network - Network to use
  * @param rpcUrl - RPC URL to use
  * @returns Registration result with transaction hashes
@@ -66,6 +67,7 @@ export async function registerName(
   name: string,
   years: number,
   owner: string,
+  maxPrice: bigint,
   network?: SupportedNetwork,
   rpcUrl?: string
 ): Promise<RegistrationResult> {
@@ -103,6 +105,18 @@ export async function registerName(
   const validatedName = validateName(name);
   const durationSeconds = Math.floor(years * SECONDS_PER_YEAR);
   const secret = generateSecret();
+
+  // Safety check: verify price BEFORE committing (prevents wasting gas if price spiked)
+  const priceBeforeCommit = await getPrice(publicClient, {
+    nameOrNames: validatedName,
+    duration: durationSeconds,
+  });
+  const totalPriceBeforeCommit = priceBeforeCommit.base + priceBeforeCommit.premium;
+  if (totalPriceBeforeCommit > maxPrice) {
+    throw new Error(
+      `Price check failed: current price (${totalPriceBeforeCommit}) exceeds maxPrice (${maxPrice})`
+    );
+  }
 
   // Step 1: Commit
   const commitTxHash = await commitName(walletClient, {

@@ -99,7 +99,12 @@ server.tool(
   },
   async ({ name, years, owner }) => {
     try {
-      const result = await registerName(name, years, owner);
+      // Get current price and set as maxPrice with 10% buffer
+      const price = await getRegistrationPrice(name, years);
+      const totalPrice = price.base + price.premium;
+      const maxPrice = (totalPrice * 110n) / 100n;
+
+      const result = await registerName(name, years, owner, maxPrice);
       return {
         content: [
           {

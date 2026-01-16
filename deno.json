@@ -4,11 +4,17 @@
   "exports": "./src/main.ts",
   "tasks": {
     "dev": "deno run --env --allow-net --allow-env --allow-read src/main.ts",
+    "http": "deno run --env --allow-net --allow-env --allow-read src/http.ts",
     "test": "deno test --env --allow-net --allow-env --allow-read",
     "register": "deno run --env --allow-net --allow-env --allow-read scripts/register.ts",
+    "test-x402": "deno run --env --allow-net --allow-env --allow-read scripts/test-x402.ts",
     "inspector": "BROWSER=none npx @modelcontextprotocol/inspector deno run --env --allow-net --allow-env --allow-read src/main.ts"
   },
   "imports": {
+    "hono": "npm:hono@4",
+    "@x402/hono": "npm:@x402/hono",
+    "@x402/evm/exact/server": "npm:@x402/evm/exact/server",
+    "@x402/core/server": "npm:@x402/core/server",
     "@ensdomains/ensjs": "npm:@ensdomains/ensjs@4",
     "@ensdomains/ensjs/public": "npm:@ensdomains/ensjs@4/public",
     "@ensdomains/ensjs/wallet": "npm:@ensdomains/ensjs@4/wallet",

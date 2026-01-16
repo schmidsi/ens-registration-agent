@@ -1,13 +1,22 @@
 # x402 HTTP API for ENS Registration Agent
 
+## Status: ✅ Implemented
+
 ## Overview
 Add a paid HTTP API alongside the existing MCP stdio server. The HTTP API uses x402 for payments.
 
 ## Key Decisions
 - **Facilitator**: Coinbase CDP (simplest, handles verification & compliance)
 - **Payment Token**: USDC (EIP-3009 for gasless transfers)
-- **Network**: Ethereum Sepolia for testing, mainnet for production
+- **Network**: Base Sepolia (`eip155:84532`) for testing, Ethereum Mainnet (`eip155:1`) for production
 - **ETH payments**: Not directly supported (x402 requires EIP-3009 tokens)
+- **Pricing**: $6.00 flat fee covers service + ENS registration cost
+
+## Constraints
+- **Name length**: 5+ characters only (excluding .eth) - guarantees $5/year tier
+- **Duration**: 1 year only
+- **No premium names**: Rejects names in temporary premium period
+- **Safety limit**: Price verified BEFORE commit with `maxPrice` parameter (prevents TOCTOU attacks)
 
 ## Architecture
 ```
@@ -24,79 +33,45 @@ Add a paid HTTP API alongside the existing MCP stdio server. The HTTP API uses x
 └───────────────────────────┘ └─────────────────────────┘
 ```
 
-## New Dependencies
+## Dependencies (x402 v2)
 ```json
 "hono": "npm:hono@4",
-"x402-hono": "npm:x402-hono"
+"@x402/hono": "npm:@x402/hono",
+"@x402/evm/exact/server": "npm:@x402/evm/exact/server",
+"@x402/core/server": "npm:@x402/core/server"
 ```
 
-## Implementation Steps
+## Implementation
 
-### Phase 1: Add Hono HTTP Server (no payments yet)
-1. Add `hono` to deno.json imports
-2. Create `src/http.ts` with basic routes:
-   - `GET /api/availability/:name` → checkAvailability
-   - `GET /api/price/:name?years=1` → getRegistrationPrice
-   - `POST /api/register` → registerName (body: {name, years, owner})
-3. Add task: `"http": "deno run --env --allow-net --allow-env --allow-read src/http.ts"`
-4. Test locally with curl
+### Endpoints
+| Endpoint | Method | Price | Description |
+|----------|--------|-------|-------------|
+| `/` | GET | Free | Health check |
+| `/api/availability/:name` | GET | Free | Check ENS name availability |
+| `/api/price/:name?years=1` | GET | Free | Get registration price |
+| `/api/register` | POST | $6.00 | Register ENS name (5+ chars, 1 year) |
 
-### Phase 2: Add x402 Payment Middleware
-1. Add `x402-hono` to deno.json imports
-2. Configure x402 middleware with:
-   - Network: `eip155:11155111` (Sepolia) for testing, `eip155:1` (mainnet) for production
-   - Token: USDC (EIP-3009)
-   - Receiving address: Your wallet
-   - Pricing per endpoint
-3. Apply middleware to paid routes
+> **Note**: The $6.00 fee covers both our service and the on-chain ENS registration cost for 5+ character names.
 
-### Phase 3: Test x402 Locally
-1. Start HTTP server: `deno task http`
-2. Test free endpoint (if any) with curl
-3. Test paid endpoint - should return 402 with payment instructions
-4. Use x402 client library to make paid request
-
-## x402 Configuration
-
-```typescript
-// src/http.ts
-import { Hono } from "hono";
-import { x402Paywall } from "x402-hono";
-
-const app = new Hono();
-
-// x402 middleware for paid routes
-app.use("/api/*", x402Paywall({
-  receivingAddress: Deno.env.get("PAYMENT_ADDRESS")!,
-  routes: {
-    "/api/availability/:name": {
-      price: "$0.001",
-      network: "eip155:11155111", // Sepolia for testing
-      description: "Check ENS name availability"
-    },
-    "/api/price/:name": {
-      price: "$0.001",
-      network: "eip155:11155111",
-      description: "Get ENS registration price"
-    },
-    "/api/register": {
-      price: "$1.00", // Higher for registration
-      network: "eip155:11155111",
-      description: "Register ENS name"
-    }
-  }
-}));
-
-// Routes reuse existing ENS logic
-app.get("/api/availability/:name", async (c) => {
-  const available = await checkAvailability(c.req.param("name"));
-  return c.json({ name: c.req.param("name"), available });
-});
-
-Deno.serve({ port: 3000 }, app.fetch);
+### Run the HTTP server
+```bash
+deno task http
 ```
 
-## Environment Variables (updated)
+### Test endpoints
+```bash
+# Health check (free)
+curl http://localhost:3000/
+
+# Free endpoints
+curl http://localhost:3000/api/availability/test.eth
+curl http://localhost:3000/api/price/test.eth
+
+# Paid endpoint (returns 402 Payment Required)
+curl -i -X POST http://localhost:3000/api/register
+```
+
+## Environment Variables
 ```
 # ENS config (existing)
 NETWORK=sepolia
@@ -105,19 +80,42 @@ PRIVATE_KEY=0x...
 
 # x402 payment config (new)
 PAYMENT_ADDRESS=0x...  # Your wallet to receive USDC payments
-PAYMENT_NETWORK=eip155:11155111  # Sepolia for testing
+PAYMENT_NETWORK=eip155:84532  # Base Sepolia for testing
 ```
 
-## Files to Create/Modify
-- `deno.json` - Add hono, x402-hono imports and http task
+## Files Modified
+- `deno.json` - Added hono, x402 imports and http task
 - `src/http.ts` - New HTTP server with x402 middleware
-- `.env.example` - Add payment config vars
+- `.env.example` - Added payment config vars
 
-## Testing Plan
-1. `deno task test` - Existing tests still pass
-2. `deno task http` - Start HTTP server on port 3000
-3. `curl http://localhost:3000/api/availability/test.eth` - Returns 402
-4. Use x402 test client to make paid request
+## x402 Response Example
+When calling the paid `/api/register` endpoint without payment:
+```
+HTTP/1.1 402 Payment Required
+payment-required: <base64-encoded JSON>
+```
+
+Decoded payment-required header:
+```json
+{
+  "x402Version": 2,
+  "error": "Payment required",
+  "resource": {
+    "url": "http://localhost:3000/api/register",
+    "description": "Register ENS name (5+ chars, 1 year)",
+    "mimeType": "application/json"
+  },
+  "accepts": [{
+    "scheme": "exact",
+    "network": "eip155:84532",
+    "amount": "6000000",
+    "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    "payTo": "0x...",
+    "maxTimeoutSeconds": 300,
+    "extra": { "name": "USDC", "version": "2" }
+  }]
+}
+```
 
 ## Deployment (later)
 - **Local**: Run with `deno task http`
@@ -125,8 +123,6 @@ PAYMENT_NETWORK=eip155:11155111  # Sepolia for testing
 - **NOT recommended**: Deno Deploy (uncertain timeout behavior for 65s registration)
 
 ## Resources
-- [x402 Documentation](https://x402.gitbook.io/x402)
-- [x402-hono npm](https://www.npmjs.com/package/x402-hono)
-- [Network IDs](https://x402.gitbook.io/x402/core-concepts/network-and-token-support)
+- [x402 Documentation](https://docs.cdp.coinbase.com/x402/welcome)
 - [Hono](https://hono.dev/)
-- [CDP x402 Docs](https://docs.cdp.coinbase.com/x402/welcome)
+- [Network Support](https://docs.cdp.coinbase.com/x402/network-support)
