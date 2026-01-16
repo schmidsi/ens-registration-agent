@@ -95,7 +95,7 @@ server.tool(
   {
     name: z.string().describe("The ENS name to register (must end with .eth)"),
     years: z.number().positive().default(1).describe("Duration in years (default: 1, can be fractional like 0.5 for 6 months)"),
-    owner: z.string().describe("Ethereum address that will own the name"),
+    owner: z.string().describe("Owner - accepts Ethereum address (0x...) or any ENS-resolvable name (vitalik.eth, name.xyz, etc.)"),
   },
   async ({ name, years, owner }) => {
     try {
