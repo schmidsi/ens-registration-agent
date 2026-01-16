@@ -4,7 +4,8 @@
   "exports": "./src/main.ts",
   "tasks": {
     "dev": "deno run --env --allow-net --allow-env --allow-read src/main.ts",
-    "test": "deno test --env --allow-net --allow-env --allow-read"
+    "test": "deno test --env --allow-net --allow-env --allow-read",
+    "register": "deno run --env --allow-net --allow-env --allow-read scripts/register.ts"
   },
   "imports": {
     "@ensdomains/ensjs": "npm:@ensdomains/ensjs@4",
