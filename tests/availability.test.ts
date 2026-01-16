@@ -1,5 +1,9 @@
 import { assertEquals, assertRejects } from "@std/assert";
+import { requireRpcUrl } from "./setup.ts";
 import { checkAvailability } from "../src/ens/availability.ts";
+
+// Validate environment before running tests
+requireRpcUrl();
 
 Deno.test("checkAvailability returns true for unregistered name", async () => {
   // This name is extremely unlikely to be registered

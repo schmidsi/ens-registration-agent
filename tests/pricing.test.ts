@@ -1,5 +1,9 @@
 import { assertEquals, assertGreater, assertRejects } from "@std/assert";
+import { requireRpcUrl } from "./setup.ts";
 import { getRegistrationPrice } from "../src/ens/pricing.ts";
+
+// Validate environment before running tests
+requireRpcUrl();
 
 Deno.test("getRegistrationPrice returns price for 1 year registration", async () => {
   const result = await getRegistrationPrice("test12345.eth", 1);
