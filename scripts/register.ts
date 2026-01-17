@@ -58,8 +58,11 @@ console.log(`\n📝 Registering ${name} for 1 year...`);
 console.log(`   Owner: ${owner}`);
 console.log(`   (This will take ~15 seconds for commit-reveal on Sepolia)\n`);
 
+// Set maxPrice with 10% buffer for price fluctuations
+const maxPrice = (totalWei * 110n) / 100n;
+
 try {
-  const result = await registerName(name, 1, owner);
+  const result = await registerName(name, 1, owner, maxPrice);
 
   console.log(`\n🎉 Registration successful!`);
   console.log(`   Name: ${result.name}`);
