@@ -70,7 +70,11 @@ try {
   console.log(`   Duration: ${result.duration} seconds`);
   console.log(`   Commit TX: ${result.commitTxHash}`);
   console.log(`   Register TX: ${result.registerTxHash}`);
-  console.log(`\n   View on Etherscan: https://sepolia.etherscan.io/tx/${result.registerTxHash}`);
+  const network = Deno.env.get("NETWORK") || "mainnet";
+  const explorerBase = network === "mainnet"
+    ? "https://eth.blockscout.com"
+    : "https://eth-sepolia.blockscout.com";
+  console.log(`\n   View on Blockscout: ${explorerBase}/tx/${result.registerTxHash}`);
 } catch (error) {
   console.error(`\n❌ Registration failed:`, error);
   Deno.exit(1);
