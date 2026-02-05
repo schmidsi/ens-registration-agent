@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { paymentMiddleware, x402ResourceServer } from "@x402/hono";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { HTTPFacilitatorClient } from "@x402/core/server";
+import { createPaywall } from "@x402/paywall";
+import { evmPaywall } from "@x402/paywall/evm";
 import { checkAvailability } from "./ens/availability.ts";
 import { getRegistrationPrice } from "./ens/pricing.ts";
 import { registerName } from "./ens/registration.ts";
@@ -33,6 +35,15 @@ const server = new x402ResourceServer(facilitatorClient).register(
   new ExactEvmScheme()
 );
 
+// Build paywall UI for browser-based payments
+const paywall = createPaywall()
+  .withNetwork(evmPaywall)
+  .withConfig({
+    appName: "ENS Registration Agent",
+    testnet: isTestnet,
+  })
+  .build();
+
 // Apply x402 payment middleware
 // Note: availability and price endpoints are FREE to encourage usage
 // Only registration requires payment (service fee covers ENS cost for 5+ char names)
@@ -52,7 +63,9 @@ app.use(
         mimeType: "application/json",
       },
     },
-    server
+    server,
+    undefined,
+    paywall,
   )
 );
 

@@ -4,6 +4,7 @@
 
 # Deno cache
 .deno/
+node_modules/
 
 # IDE
 .vscode/
