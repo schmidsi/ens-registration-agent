@@ -150,12 +150,24 @@ Each commit should be independently revertible. Keep changes small and focused.
 - `chore: update dependencies`
 
 ## Next Steps
-- [ ] x402 payment integration for charging callers
-- [ ] Add to ERC-8004 registry
+- [x] x402 payment integration for charging callers
+- [ ] Test on Ethereum mainnet
+- [ ] Deploy (Fly.io or Railway)
 - [ ] ENS name for the agent (ens-agent.ses.eth)
+- [ ] Add to ERC-8004 registry
+- [ ] Marketing — list on directories (see below)
 - [ ] Extend existing names feature
 - [ ] Base names / Celo names support
 - [ ] Name suggestions
+
+## Agent Directories & Registries
+- [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) — on-chain agent registry (Ethereum, Base, BNB Chain)
+- [agent.ai](https://agent.ai/) — professional network for AI agents
+- [AI Agents Directory](https://aiagentsdirectory.com/) — 2,100+ agents, 73+ categories
+- [awesome-ai-agents](https://github.com/e2b-dev/awesome-ai-agents) — popular GitHub list
+- [AI Agent Store](https://aiagentstore.ai/) — marketplace with free listing
+- [TrillionAgent](https://trillionagent.com) — free to submit
+- [Google Cloud Agent Finder](https://cloud.withgoogle.com/agentfinder/) — Google's directory
 
 ## Resources
 - [ENS Documentation](https://docs.ens.domains/)
