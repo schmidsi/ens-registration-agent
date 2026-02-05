@@ -25,8 +25,12 @@ const MIN_NAME_LENGTH = 5; // Minimum characters (excluding .eth)
 const REGISTRATION_YEARS = 1; // Fixed to 1 year
 
 // Create facilitator client
+// x402.org/facilitator is testnet-only; use open facilitator for mainnet support
+const facilitatorUrl = isTestnet
+  ? "https://x402.org/facilitator"
+  : "https://facilitator.payai.network";
 const facilitatorClient = new HTTPFacilitatorClient({
-  url: "https://x402.org/facilitator",
+  url: facilitatorUrl,
 });
 
 // Create x402 resource server and register EVM scheme
