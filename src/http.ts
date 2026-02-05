@@ -62,6 +62,18 @@ app.use(
         description: `Register ENS name (${MIN_NAME_LENGTH}+ chars, ${REGISTRATION_YEARS} year)`,
         mimeType: "application/json",
       },
+      "GET /api/register": {
+        accepts: [
+          {
+            scheme: "exact",
+            price: SERVICE_FEE,
+            network,
+            payTo,
+          },
+        ],
+        description: `Register ENS name (${MIN_NAME_LENGTH}+ chars, ${REGISTRATION_YEARS} year)`,
+        mimeType: "application/json",
+      },
     },
     server,
     undefined,
@@ -122,7 +134,24 @@ function getLabel(name: string): string {
   return name.toLowerCase().replace(/\.eth$/, "");
 }
 
-// Register ENS name
+// Register ENS name (GET — returns API info after payment)
+app.get("/api/register", (c) => {
+  return c.json({
+    service: "ens-agent",
+    description: `Register ENS name (${MIN_NAME_LENGTH}+ chars, ${REGISTRATION_YEARS} year)`,
+    usage: {
+      method: "POST",
+      url: "/api/register",
+      body: { name: "example.eth", owner: "0x..." },
+    },
+    freeEndpoints: {
+      availability: "GET /api/availability/:name",
+      price: "GET /api/price/:name?years=1",
+    },
+  });
+});
+
+// Register ENS name (POST — performs registration)
 app.post("/api/register", async (c) => {
   let body: { name?: string; owner?: string };
   try {
