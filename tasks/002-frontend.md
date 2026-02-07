@@ -1,6 +1,6 @@
 # Frontend for ENS Registration
 
-## Status: Planned
+## Status: ✅ Implemented
 
 ## Problem
 
