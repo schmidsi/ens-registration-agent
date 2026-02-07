@@ -17,5 +17,3 @@ node_modules/
 # Context (for Conductor)
 .context/
 
-# Claude Code
-.claude/

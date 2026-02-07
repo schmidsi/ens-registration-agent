@@ -1,0 +1,44 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push origin +*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git checkout .:*)",
+      "Bash(git clean -f:*)",
+      "Bash(git branch -D:*)"
+    ],
+    "allow": [
+      "Bash(deno task:*)",
+      "Bash(git pull:*)",
+      "Bash(git -C /Users/schmidsi/Development/@ses.eth/ens-registration-agent status)",
+      "Bash(git -C /Users/schmidsi/Development/@ses.eth/ens-registration-agent diff)",
+      "Bash(git -C /Users/schmidsi/Development/@ses.eth/ens-registration-agent log --oneline -5)",
+      "Bash(git -C /Users/schmidsi/Development/@ses.eth/ens-registration-agent add:*)",
+      "Bash(git -C /Users/schmidsi/Development/@ses.eth/ens-registration-agent commit -m \"$\\(cat <<''EOF''\nchore: add .claude/ to .gitignore\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(open:*)",
+      "Bash(git push:*)",
+      "WebSearch",
+      "Bash(git add:*)",
+      "Bash(curl:*)",
+      "Bash(cast:*)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:docs.cdp.coinbase.com)",
+      "WebFetch(domain:www.x402.org)",
+      "WebFetch(domain:www.perplexity.ai)",
+      "Bash(wc:*)",
+      "WebFetch(domain:docs.docker.com)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:codewithandrea.com)",
+      "WebFetch(domain:www.solberg.is)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:davidbern.com)",
+      "WebFetch(domain:www.anthropic.com)",
+      "WebFetch(domain:blog.herlein.com)",
+      "Bash(docker build:*)"
+    ]
+  }
+}
