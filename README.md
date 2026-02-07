@@ -1,5 +1,4 @@
 # ENS Registration Agent - MCP Server
-<!-- test change - can be removed -->
 
 An MCP server that exposes ENS registration capabilities to other AI agents.
 
