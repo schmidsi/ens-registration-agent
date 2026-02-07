@@ -1,0 +1,6 @@
+.git
+.env
+.devcontainer
+.context
+node_modules
+tasks
