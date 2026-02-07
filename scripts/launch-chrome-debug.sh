@@ -17,38 +17,44 @@ sleep 2
 
 echo "Starting CDP proxy on 0.0.0.0:9223 → localhost:9222"
 node -e "
+const http = require('http');
 const net = require('net');
 
-net.createServer((client) => {
-  const upstream = net.connect(9222, '127.0.0.1');
-
-  client.once('data', (data) => {
-    const str = data.toString();
-    const isJson = /GET \/json/.test(str);
-    const patched = str.replace(/[Hh]ost: [^\r\n]+/, 'Host: localhost:9222');
-    upstream.write(patched);
-    client.pipe(upstream);
-
-    if (isJson) {
-      let buf = '';
-      upstream.on('data', (d) => buf += d.toString());
-      upstream.on('end', () => {
-        let res = buf.replace(/localhost:9222/g, 'host.docker.internal:9223');
-        // Fix Content-Length after URL rewrite
-        res = res.replace(/Content-Length:\s*\d+/i, () => {
-          const bodyStart = res.indexOf('\r\n\r\n') + 4;
-          return 'Content-Length: ' + Buffer.byteLength(res.slice(bodyStart));
-        });
-        client.end(res);
-      });
-    } else {
-      upstream.pipe(client);
-    }
+const server = http.createServer((req, res) => {
+  const opts = {
+    hostname: '127.0.0.1', port: 9222,
+    path: req.url, method: req.method,
+    headers: { ...req.headers, host: 'localhost:9222' }
+  };
+  const proxy = http.request(opts, (upstream) => {
+    let body = '';
+    upstream.on('data', (c) => body += c);
+    upstream.on('end', () => {
+      body = body.replace(/localhost:9222/g, 'host.docker.internal:9223');
+      const hdrs = { ...upstream.headers, 'content-length': Buffer.byteLength(body) };
+      res.writeHead(upstream.statusCode, hdrs);
+      res.end(body);
+    });
   });
+  proxy.on('error', (e) => { res.writeHead(502); res.end(e.message); });
+  req.pipe(proxy);
+});
 
-  upstream.on('error', () => client.destroy());
-  client.on('error', () => upstream.destroy());
-}).listen(9223, '0.0.0.0', () => console.log('CDP proxy ready on :9223'));
+server.on('upgrade', (req, socket, head) => {
+  const upstream = net.connect(9222, '127.0.0.1');
+  const raw = req.method + ' ' + req.url + ' HTTP/1.1\r\n' +
+    Object.entries(req.headers).map(([k,v]) =>
+      k.toLowerCase() === 'host' ? k+': localhost:9222' : k+': '+v
+    ).join('\r\n') + '\r\n\r\n';
+  upstream.write(raw);
+  if (head.length) upstream.write(head);
+  socket.pipe(upstream);
+  upstream.pipe(socket);
+  upstream.on('error', () => socket.destroy());
+  socket.on('error', () => upstream.destroy());
+});
+
+server.listen(9223, '0.0.0.0', () => console.log('CDP proxy ready on :9223'));
 " &
 
 PROXY_PID=$!
