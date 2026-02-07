@@ -5,7 +5,7 @@
       "args": [
         "@playwright/mcp@latest",
         "--cdp-endpoint",
-        "ws://host.docker.internal:9222"
+        "http://host.docker.internal:9223"
       ]
     }
   }

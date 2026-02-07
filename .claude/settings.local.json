@@ -1,14 +1,5 @@
 {
   "permissions": {
-    "deny": [
-      "Bash(git push --force:*)",
-      "Bash(git push -f:*)",
-      "Bash(git push origin +*)",
-      "Bash(git reset --hard:*)",
-      "Bash(git checkout .:*)",
-      "Bash(git clean -f:*)",
-      "Bash(git branch -D:*)"
-    ],
     "allow": [
       "Bash(deno task:*)",
       "Bash(git pull:*)",
@@ -38,7 +29,21 @@
       "WebFetch(domain:davidbern.com)",
       "WebFetch(domain:www.anthropic.com)",
       "WebFetch(domain:blog.herlein.com)",
-      "Bash(docker build:*)"
+      "Bash(docker build:*)",
+      "Bash(docker run:*)"
+    ],
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push origin +*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git checkout .:*)",
+      "Bash(git clean -f:*)",
+      "Bash(git branch -D:*)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "playwright"
+  ],
+  "enableAllProjectMcpServers": true
 }
