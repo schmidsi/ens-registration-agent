@@ -1,6 +1,8 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@std/assert@1": "1.0.18",
+    "jsr:@std/internal@^1.0.12": "1.0.12",
     "npm:@ensdomains/ensjs@4": "4.2.2_viem@2.45.1__zod@3.25.76__ws@8.18.3___bufferutil@4.1.0___utf-8-validate@5.0.10_zod@3.25.76_graphql@16.12.0",
     "npm:@modelcontextprotocol/sdk@1": "1.26.0_zod@3.25.76_hono@4.11.7_ajv@8.17.1_express@5.2.1",
     "npm:@x402/core@*": "2.2.0",
@@ -10,6 +12,17 @@
     "npm:hono@4": "4.11.7",
     "npm:viem@2": "2.45.1_zod@3.25.76_ws@8.18.3__bufferutil@4.1.0__utf-8-validate@5.0.10",
     "npm:zod@3": "3.25.76"
+  },
+  "jsr": {
+    "@std/assert@1.0.18": {
+      "integrity": "270245e9c2c13b446286de475131dc688ca9abcd94fc5db41d43a219b34d1c78",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
+    },
+    "@std/internal@1.0.12": {
+      "integrity": "972a634fd5bc34b242024402972cd5143eac68d8dffaca5eaa4dba30ce17b027"
+    }
   },
   "npm": {
     "@adraffy/ens-normalize@1.10.1": {

@@ -132,6 +132,22 @@ ens-registration-agent/
     └── registration.test.ts
 ```
 
+## Development with Devcontainer
+
+For isolated development where Claude Code can run with `--dangerously-skip-permissions`:
+
+1. Open in VS Code/Cursor → **"Reopen in Container"**
+2. Inside the container, run: `claude --dangerously-skip-permissions`
+
+The container includes Deno, Foundry (`cast`), GitHub CLI, and Claude Code. No secrets (like `PRIVATE_KEY`) are mounted — only non-sensitive config. ENS registrations should be done from the host.
+
+**Browser testing:** To give the container access to Chrome on your host:
+```bash
+# On host
+./scripts/launch-chrome-debug.sh
+# From container, connect to host.docker.internal:9222
+```
+
 ## Contributing
 
 Follow TDD (Test-Driven Development) with small, atomic commits:

@@ -1,0 +1,32 @@
+{
+  "name": "ENS Registration Agent",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "TZ": "${localEnv:TZ:UTC}",
+      "CLAUDE_CODE_VERSION": "latest"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "denoland.vscode-deno"
+      ]
+    }
+  },
+  "remoteUser": "node",
+  "mounts": [
+    "source=ens-agent-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
+    "source=ens-agent-claude-config-${devcontainerId},target=/home/node/.claude,type=volume",
+    "source=${localWorkspaceFolder}/.env.devcontainer,target=/workspace/.env,type=bind,readonly"
+  ],
+  "containerEnv": {
+    "NODE_OPTIONS": "--max-old-space-size=4096",
+    "CLAUDE_CONFIG_DIR": "/home/node/.claude",
+    "NETWORK": "sepolia"
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
+  "workspaceFolder": "/workspace",
+  "postCreateCommand": "deno install"
+}
