@@ -30,7 +30,10 @@
       "WebFetch(domain:www.anthropic.com)",
       "WebFetch(domain:blog.herlein.com)",
       "Bash(docker build:*)",
-      "Bash(docker run:*)"
+      "Bash(docker run:*)",
+      "Bash(./scripts/launch-chrome-debug.sh:*)",
+      "Bash(PAYMENT_ADDRESS=0x0000000000000000000000000000000000000001 deno task:*)",
+      "mcp__playwright__*"
     ],
     "deny": [
       "Bash(git push --force:*)",
@@ -39,11 +42,12 @@
       "Bash(git reset --hard:*)",
       "Bash(git checkout .:*)",
       "Bash(git clean -f:*)",
-      "Bash(git branch -D:*)"
+      "Bash(git branch -D:*)",
+      "mcp__playwright__browser_install"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "playwright"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }
