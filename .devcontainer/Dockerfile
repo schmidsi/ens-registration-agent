@@ -24,10 +24,11 @@ RUN ARCH=$(dpkg --print-architecture) && \
     curl -fsSL "https://github.com/cli/cli/releases/latest/download/gh_$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest | jq -r '.tag_name' | sed 's/^v//')_linux_${ARCH}.tar.gz" \
     | tar xz --strip-components=1 -C /usr/local
 
-# Install Claude Code (native installer)
-RUN curl -fsSL https://claude.ai/install.sh | bash && \
-    cp /root/.local/bin/claude /usr/local/bin/
-
 ENV DEVCONTAINER=true
 USER node
+
+# Install Claude Code as node user (enables auto-updates)
+RUN curl -fsSL https://claude.ai/install.sh | bash
+ENV PATH="/home/node/.local/bin:$PATH"
+
 WORKDIR /workspace
