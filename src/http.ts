@@ -467,4 +467,14 @@ console.log(`ENS Agent HTTP server running on http://localhost:${port}`);
 console.log(`Payment address: ${payTo}`);
 console.log(`Payment network: ${network}${isTestnet ? " (testnet)" : ""}`);
 console.log(`Service fee: ${SERVICE_FEE}`);
-Deno.serve({ port }, app.fetch);
+Deno.serve({ port }, (req) => {
+  // Fix request URL protocol behind reverse proxy (Traefik)
+  // so x402 payment-required header contains https:// resource URL
+  const proto = req.headers.get("x-forwarded-proto");
+  if (proto === "https" && req.url.startsWith("http://")) {
+    const url = new URL(req.url);
+    url.protocol = "https:";
+    req = new Request(url.toString(), req);
+  }
+  return app.fetch(req);
+});
