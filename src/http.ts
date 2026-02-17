@@ -95,36 +95,62 @@ function pageShell(title: string, body: string): string {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title}</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f7f7f8; color: #333; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-  .container { max-width: 480px; width: 100%; padding: 60px 20px; }
-  h1 { font-size: 2rem; color: #5298ff; text-align: center; margin-bottom: 8px; }
-  .subtitle { text-align: center; color: #888; margin-bottom: 40px; font-size: 0.95rem; }
+  body { font-family: 'JetBrains Mono', 'Courier New', monospace; background: #000; color: #00ff41; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  .container { max-width: 720px; width: 100%; padding: 40px 20px; }
+  h1 { font-size: 2rem; color: #00ff41; text-align: center; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.1em; }
+  h2 { font-size: 1.1rem; color: #00ff41; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  h3 { font-size: 0.95rem; color: #00cc33; margin-bottom: 8px; }
+  .subtitle { text-align: center; color: #00cc33; margin-bottom: 40px; font-size: 0.85rem; }
   .field { margin-bottom: 20px; }
-  label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #555; }
-  .input-wrap { display: flex; align-items: center; background: #fff; border: 2px solid #e0e0e0; border-radius: 12px; overflow: hidden; transition: border-color 0.2s; }
-  .input-wrap:focus-within { border-color: #5298ff; }
-  input { flex: 1; border: none; outline: none; padding: 14px 16px; font-size: 1rem; background: transparent; }
-  .suffix { padding: 14px 16px 14px 0; color: #888; font-size: 1rem; font-weight: 500; }
-  .status { font-size: 0.85rem; margin-top: 6px; min-height: 20px; }
-  .status.available { color: #2ecc40; }
-  .status.taken { color: #e74c3c; }
-  .status.error { color: #e74c3c; }
-  .status.checking { color: #888; }
-  .price { font-size: 0.85rem; color: #555; margin-top: 4px; }
-  button { width: 100%; padding: 14px; font-size: 1rem; font-weight: 600; border: none; border-radius: 12px; cursor: pointer; transition: background 0.2s, opacity 0.2s; }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn-primary { background: #5298ff; color: #fff; }
-  .btn-primary:hover:not(:disabled) { background: #3b7de8; }
-  .warning { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px; font-size: 0.85rem; margin-bottom: 20px; color: #856404; }
-  .info { text-align: center; font-size: 0.8rem; color: #aaa; margin-top: 24px; }
-  .result { background: #fff; border-radius: 12px; padding: 24px; margin-top: 20px; }
-  .result.success { border: 2px solid #2ecc40; }
-  .result.fail { border: 2px solid #e74c3c; }
-  .result h2 { font-size: 1.2rem; margin-bottom: 12px; }
-  .result p { font-size: 0.9rem; margin-bottom: 8px; color: #555; }
-  .result code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; word-break: break-all; }
-  a { color: #5298ff; }
+  label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; color: #00cc33; text-transform: uppercase; letter-spacing: 0.05em; }
+  .input-wrap { display: flex; align-items: center; background: #0a0a0a; border: 2px solid #00ff41; overflow: hidden; transition: border-color 0.2s; }
+  .input-wrap:focus-within { border-color: #00ff99; box-shadow: 0 0 10px rgba(0,255,65,0.3); }
+  input { flex: 1; border: none; outline: none; padding: 14px 16px; font-size: 1rem; background: transparent; color: #00ff41; font-family: 'JetBrains Mono', monospace; }
+  input::placeholder { color: #006618; }
+  .suffix { padding: 14px 16px 14px 0; color: #00cc33; font-size: 1rem; font-weight: 500; }
+  .status { font-size: 0.8rem; margin-top: 6px; min-height: 20px; font-family: 'JetBrains Mono', monospace; }
+  .status.available { color: #00ff41; }
+  .status.taken { color: #ff0040; }
+  .status.error { color: #ff0040; }
+  .status.checking { color: #00cc33; }
+  .price { font-size: 0.8rem; color: #00cc33; margin-top: 4px; }
+  button { width: 100%; padding: 14px; font-size: 1rem; font-weight: 700; border: 2px solid #00ff41; cursor: pointer; transition: all 0.15s; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.1em; }
+  button:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn-primary { background: #00ff41; color: #000; }
+  .btn-primary:hover:not(:disabled) { background: #000; color: #00ff41; box-shadow: 0 0 20px rgba(0,255,65,0.4); }
+  .warning { background: #0a0a0a; border: 2px solid #ffaa00; padding: 12px; font-size: 0.8rem; margin-bottom: 20px; color: #ffaa00; }
+  .info { text-align: center; font-size: 0.75rem; color: #006618; margin-top: 24px; }
+  .result { background: #0a0a0a; padding: 24px; margin-top: 20px; }
+  .result.success { border: 2px solid #00ff41; }
+  .result.fail { border: 2px solid #ff0040; }
+  .result h2 { font-size: 1.1rem; margin-bottom: 12px; }
+  .result p { font-size: 0.85rem; margin-bottom: 8px; color: #00cc33; }
+  .result code { background: #111; padding: 2px 6px; font-size: 0.8rem; word-break: break-all; color: #00ff41; border: 1px solid #003300; }
+  a { color: #00ff41; text-decoration: none; border-bottom: 1px solid #00ff41; }
+  a:hover { color: #00ff99; border-color: #00ff99; }
+  .section { border: 2px solid #003300; padding: 24px; margin-bottom: 24px; background: #0a0a0a; }
+  .section:hover { border-color: #00ff41; }
+  pre { background: #111; border: 1px solid #003300; padding: 16px; overflow-x: auto; font-size: 0.8rem; line-height: 1.6; color: #00cc33; margin: 12px 0; }
+  pre .kw { color: #00ff41; }
+  pre .str { color: #00ff99; }
+  pre .cmt { color: #006618; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+  .tag { display: inline-block; border: 1px solid #00ff41; padding: 2px 8px; font-size: 0.7rem; text-transform: uppercase; margin-right: 6px; margin-bottom: 4px; }
+  .tag.free { border-color: #00cc33; color: #00cc33; }
+  .tag.paid { border-color: #ffaa00; color: #ffaa00; }
+  .tag.method { border-color: #00ff41; color: #00ff41; }
+  .endpoint { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #001a00; }
+  .endpoint:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .endpoint-path { font-weight: 700; color: #00ff41; font-size: 0.9rem; margin-bottom: 4px; }
+  .endpoint-desc { color: #00cc33; font-size: 0.8rem; }
+  hr { border: none; border-top: 1px solid #003300; margin: 32px 0; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  .blink { animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .glow { text-shadow: 0 0 10px rgba(0,255,65,0.5); }
 </style>
 </head>
 <body>
@@ -136,34 +162,181 @@ ${body}
 }
 
 function renderFrontend(): string {
-  return pageShell("ENS Registration", `
-  <h1>ENS Registration</h1>
-  <p class="subtitle">Register a .eth name, paid with USDC via x402</p>
+  const baseUrl = Deno.env.get("BASE_URL") ?? "";
+  return pageShell("ENS Registration Agent", `
+  <h1 class="glow">ENS Registration Agent</h1>
+  <p class="subtitle">Register .eth names via API &middot; Paid with USDC via <a href="https://x402.org" target="_blank">x402</a></p>
 
-  <div class="field">
-    <label for="name">ENS Name</label>
-    <div class="input-wrap">
-      <input type="text" id="name" placeholder="myname" autocomplete="off" autofocus>
-      <span class="suffix">.eth</span>
+  <!-- AGENT-READABLE DOCUMENTATION -->
+  <!-- This service registers ENS (.eth) names on Ethereum mainnet.
+       Payment is handled via x402 protocol (USDC on Base).
+       Two integration paths: HTTP API (x402) or MCP server (stdio).
+
+       Quick start for agents:
+       1. GET /api/availability/{name}.eth  (free, no auth)
+       2. GET /api/price/{name}.eth         (free, no auth)
+       3. POST /api/register                (x402 paywall, ${SERVICE_FEE} USDC)
+          Body: {"name": "example.eth", "owner": "0x..."}
+          Payment: x402 protocol auto-negotiates via 402 response header
+
+       Constraints: ${MIN_NAME_LENGTH}+ character names, ${REGISTRATION_YEARS}-year registration, ~65s commit-reveal
+       MCP: Connect via stdio transport to use checkAvailability, getRegistrationPrice, registerName tools
+  -->
+
+  <div class="section">
+    <h2>// What is this?</h2>
+    <p style="font-size:0.85rem;line-height:1.6">
+      An autonomous ENS registration service. Point your agent at this API,
+      pay with USDC via the <a href="https://x402.org" target="_blank">x402 payment protocol</a>,
+      and get a .eth name registered on Ethereum mainnet. No wallet connection needed &mdash;
+      the service holds an operational wallet and handles the two-step commit-reveal process.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>// For Agents</h2>
+    <p style="font-size:0.8rem;color:#00cc33;margin-bottom:16px">Two integration paths. Pick what fits your stack.</p>
+
+    <div class="grid">
+      <div style="border:1px solid #003300;padding:16px">
+        <h3>HTTP + x402</h3>
+        <p style="font-size:0.75rem;color:#00cc33;margin-bottom:8px">
+          Standard REST API. Payment handled automatically via the
+          <a href="https://x402.org" target="_blank">x402 protocol</a> &mdash;
+          send a request, get a 402 response with payment details,
+          pay on Base (USDC), retry with receipt.
+        </p>
+        <span class="tag">REST</span><span class="tag">x402</span><span class="tag">USDC</span>
+      </div>
+      <div style="border:1px solid #003300;padding:16px">
+        <h3>MCP Server</h3>
+        <p style="font-size:0.75rem;color:#00cc33;margin-bottom:8px">
+          <a href="https://modelcontextprotocol.io" target="_blank">Model Context Protocol</a> server
+          over stdio. Connect directly from Claude, Cursor, or any MCP-compatible client.
+          Requires a co-located wallet (PRIVATE_KEY env).
+        </p>
+        <span class="tag">MCP</span><span class="tag">stdio</span><span class="tag">tools</span>
+      </div>
     </div>
-    <div id="status" class="status"></div>
-    <div id="price" class="price"></div>
   </div>
 
-  <div class="field">
-    <label for="owner">Owner Address</label>
-    <div class="input-wrap">
-      <input type="text" id="owner" placeholder="0x...">
+  <div class="section">
+    <h2>// API Endpoints</h2>
+
+    <div class="endpoint">
+      <div class="endpoint-path"><span class="tag method">GET</span> /api/availability/:name</div>
+      <div class="endpoint-desc">Check if an ENS name is available. <span class="tag free">Free</span></div>
+<pre>curl ${baseUrl}/api/availability/example.eth
+<span class="cmt">// {"name":"example.eth","available":true}</span></pre>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-path"><span class="tag method">GET</span> /api/price/:name</div>
+      <div class="endpoint-desc">Get registration price in ETH. Optional <code>?years=1</code> param. <span class="tag free">Free</span></div>
+<pre>curl ${baseUrl}/api/price/example.eth?years=1
+<span class="cmt">// {"name":"example.eth","years":1,"totalEth":"0.003..."}</span></pre>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-path"><span class="tag method">POST</span> /api/register</div>
+      <div class="endpoint-desc">Register an ENS name. <span class="tag paid">${SERVICE_FEE} USDC</span></div>
+<pre><span class="cmt"># First request returns 402 with x402 payment details.</span>
+<span class="cmt"># Pay via x402, then retry with payment receipt header.</span>
+curl -X POST ${baseUrl}/api/register \\
+  -H "Content-Type: application/json" \\
+  -d '{"name":"example.eth","owner":"0xYourAddress"}'
+
+<span class="cmt"># Response on success:</span>
+<span class="cmt">// {"success":true,"name":"example.eth","owner":"0x...",</span>
+<span class="cmt">//  "commitTxHash":"0x...","registerTxHash":"0x..."}</span></pre>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-path"><span class="tag method">GET</span> /api/health</div>
+      <div class="endpoint-desc">Health check. <span class="tag free">Free</span></div>
     </div>
   </div>
 
-  <div class="warning">
-    Registration takes ~65 seconds (commit-reveal). Do not close the tab after paying.
+  <div class="section">
+    <h2>// MCP Tools</h2>
+    <p style="font-size:0.8rem;color:#00cc33;margin-bottom:12px">
+      Available when connected via MCP stdio transport.
+    </p>
+
+    <div class="endpoint">
+      <div class="endpoint-path">checkAvailability</div>
+      <div class="endpoint-desc">Check if an ENS name is available for registration.</div>
+      <pre><span class="cmt">params:</span> { name: <span class="str">"example.eth"</span> }</pre>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-path">getRegistrationPrice</div>
+      <div class="endpoint-desc">Get price for registering an ENS name.</div>
+      <pre><span class="cmt">params:</span> { name: <span class="str">"example.eth"</span>, years: <span class="str">1</span> }</pre>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-path">registerName</div>
+      <div class="endpoint-desc">Register an ENS name (commit-reveal, ~60s).</div>
+      <pre><span class="cmt">params:</span> { name: <span class="str">"example.eth"</span>, years: <span class="str">1</span>, owner: <span class="str">"0x..."</span> }</pre>
+    </div>
   </div>
 
-  <button id="register" class="btn-primary" disabled>Register</button>
+  <div class="section">
+    <h2>// x402 Payment Flow</h2>
+    <p style="font-size:0.8rem;color:#00cc33;line-height:1.6;margin-bottom:12px">
+      The <a href="https://x402.org" target="_blank">x402 protocol</a> enables machine-to-machine payments.
+      When you hit a paid endpoint, you get a <code>402 Payment Required</code> response
+      with payment details in the headers. Your agent pays on-chain (USDC on Base),
+      then retries with the payment receipt.
+    </p>
+<pre><span class="cmt">// 1. Agent calls POST /api/register</span>
+<span class="cmt">// 2. Server returns 402 + x402 payment header</span>
+<span class="cmt">// 3. Agent pays ${SERVICE_FEE} USDC on Base (chain ${network})</span>
+<span class="cmt">// 4. Agent retries with X-PAYMENT header</span>
+<span class="cmt">// 5. Server verifies payment, registers ENS name</span></pre>
+    <p style="font-size:0.75rem;color:#006618;margin-top:8px">
+      Payment address: <code>${payTo}</code><br>
+      Network: <code>${network}</code>${isTestnet ? " (testnet)" : ""}<br>
+      Facilitator: <code>${facilitatorUrl}</code>
+    </p>
+  </div>
 
-  <p class="info">Service fee: ${SERVICE_FEE} USDC &middot; ${MIN_NAME_LENGTH}+ characters &middot; ${REGISTRATION_YEARS} year</p>
+  <hr>
+
+  <div class="section">
+    <h2>// Register a Name</h2>
+    <p style="font-size:0.8rem;color:#00cc33;margin-bottom:16px">Or just use the form. Humans welcome too.</p>
+
+    <div class="field">
+      <label for="name">ENS Name</label>
+      <div class="input-wrap">
+        <input type="text" id="name" placeholder="myname" autocomplete="off" autofocus>
+        <span class="suffix">.eth</span>
+      </div>
+      <div id="status" class="status"></div>
+      <div id="price" class="price"></div>
+    </div>
+
+    <div class="field">
+      <label for="owner">Owner Address</label>
+      <div class="input-wrap">
+        <input type="text" id="owner" placeholder="0x...">
+      </div>
+    </div>
+
+    <div class="warning">
+      &#9888; Registration takes ~65 seconds (commit-reveal). Do not close the tab after paying.
+    </div>
+
+    <button id="register" class="btn-primary" disabled>Register<span class="blink">_</span></button>
+
+    <p class="info">Service fee: ${SERVICE_FEE} USDC &middot; ${MIN_NAME_LENGTH}+ characters &middot; ${REGISTRATION_YEARS} year</p>
+  </div>
+
+  <p style="text-align:center;font-size:0.7rem;color:#003300;margin-top:32px">
+    Built with <a href="https://x402.org">x402</a> + <a href="https://docs.ens.domains">ENS</a> + <a href="https://modelcontextprotocol.io">MCP</a>
+  </p>
 
   <script>
     const nameInput = document.getElementById("name");
@@ -231,7 +404,7 @@ function renderFrontend(): string {
 
 function renderSuccess(data: { name: string; owner: string; commitTxHash: string; registerTxHash: string; ensCostEth: string }): string {
   return pageShell("Registration Complete", `
-  <h1>Registration Complete</h1>
+  <h1 class="glow">Registration Complete</h1>
   <div class="result success">
     <h2>${data.name}</h2>
     <p><strong>Owner:</strong> <code>${data.owner}</code></p>
@@ -244,9 +417,9 @@ function renderSuccess(data: { name: string; owner: string; commitTxHash: string
 
 function renderError(message: string): string {
   return pageShell("Registration Failed", `
-  <h1>Registration Failed</h1>
+  <h1 style="color:#ff0040">Registration Failed</h1>
   <div class="result fail">
-    <p>${message}</p>
+    <p style="color:#ff0040">${message}</p>
   </div>
   <p class="info" style="margin-top:16px"><a href="/">Try again</a></p>`);
 }
