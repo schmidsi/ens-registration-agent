@@ -20,3 +20,7 @@ node_modules/
 # Playwright MCP
 .playwright-mcp/
 
+# Claude Code local settings and logs
+.claude/settings.local.json
+.claude/coolify-audit-log.md
+
