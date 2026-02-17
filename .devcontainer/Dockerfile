@@ -24,10 +24,11 @@ RUN ARCH=$(dpkg --print-architecture) && \
     curl -fsSL "https://github.com/cli/cli/releases/latest/download/gh_$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest | jq -r '.tag_name' | sed 's/^v//')_linux_${ARCH}.tar.gz" \
     | tar xz --strip-components=1 -C /usr/local
 
-# Install Claude Code via npm (fast in Docker; auto-updates not needed in container)
+# Install Claude Code via npm — owned by node user so auto-update works
 ENV NPM_CONFIG_PREFIX=/usr/local/share/npm-global
 ENV PATH=$PATH:/usr/local/share/npm-global/bin
-RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
+RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} && \
+    chown -R node:node /usr/local/share/npm-global
 
 # Convenience shortcut: `c` runs Claude Code with --dangerously-skip-permissions
 RUN echo '#!/bin/bash\ncd /workspace && exec claude --dangerously-skip-permissions "$@"' \

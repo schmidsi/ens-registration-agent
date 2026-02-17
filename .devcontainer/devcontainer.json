@@ -19,7 +19,7 @@
   "mounts": [
     "source=ens-agent-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
     "source=${localEnv:HOME}/.claude,target=/home/node/.claude,type=bind",
-    "source=${localWorkspaceFolder}/.env.devcontainer,target=/workspace/.env,type=bind,readonly"
+    "source=${localWorkspaceFolder}/.env,target=/workspace/.env,type=bind,readonly"
   ],
   "containerEnv": {
     "NODE_OPTIONS": "--max-old-space-size=4096",
