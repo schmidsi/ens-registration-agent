@@ -1,10 +1,20 @@
 import { commitName, registerName as ensRegisterName } from "@ensdomains/ensjs/wallet";
 import { getPrice, getAddressRecord } from "@ensdomains/ensjs/public";
 import { isAddress, type Address, type Hex } from "viem";
+import { addEnsContracts } from "@ensdomains/ensjs";
+import { mainnet, sepolia } from "viem/chains";
 import { createEnsClient, createEnsWalletClient, getConfigFromEnv, type SupportedNetwork } from "./client.ts";
 import { validateName, SECONDS_PER_YEAR } from "./utils.ts";
 
 type EnsClient = ReturnType<typeof createEnsClient>;
+
+/**
+ * Get the public resolver address for the given network.
+ */
+function getPublicResolverAddress(network: SupportedNetwork): Address {
+  const chain = addEnsContracts(network === "mainnet" ? mainnet : sepolia);
+  return chain.contracts.ensPublicResolver.address as Address;
+}
 
 export interface RegistrationResult {
   name: string;
@@ -105,6 +115,7 @@ export async function registerName(
   const validatedName = validateName(name);
   const durationSeconds = Math.floor(years * SECONDS_PER_YEAR);
   const secret = generateSecret();
+  const resolverAddress = getPublicResolverAddress(selectedNetwork);
 
   // Safety check: verify price BEFORE committing (prevents wasting gas if price spiked)
   const priceBeforeCommit = await getPrice(publicClient, {
@@ -118,13 +129,20 @@ export async function registerName(
     );
   }
 
-  // Step 1: Commit
-  const commitTxHash = await commitName(walletClient, {
+  // Registration params shared between commit and register (must match for commit-reveal)
+  const registrationParams = {
     name: validatedName,
     owner: resolvedOwner,
     duration: durationSeconds,
     secret,
-  });
+    resolverAddress,
+    records: {
+      coins: [{ coin: 60, value: resolvedOwner }],
+    },
+  };
+
+  // Step 1: Commit
+  const commitTxHash = await commitName(walletClient, registrationParams);
 
   // Wait for commit transaction to be mined
   await publicClient.waitForTransactionReceipt({ hash: commitTxHash });
@@ -146,10 +164,7 @@ export async function registerName(
 
   // Step 4: Register
   const registerTxHash = await ensRegisterName(walletClient, {
-    name: validatedName,
-    owner: resolvedOwner,
-    duration: durationSeconds,
-    secret,
+    ...registrationParams,
     value,
   });
 
