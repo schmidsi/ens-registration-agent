@@ -26,12 +26,11 @@ if (!payerPrivateKey) {
 const account = privateKeyToAccount(payerPrivateKey as `0x${string}`);
 console.log(`Payer wallet: ${account.address}`);
 
-// Create x402 client with EVM scheme for Base Sepolia
-// The account from privateKeyToAccount has address + signTypedData which is what x402 needs
-const client = new x402Client().register(
-  "eip155:84532", // Base Sepolia
-  new ExactEvmScheme(account)
-);
+// Create x402 client with EVM scheme
+// Register both Base mainnet and Sepolia so the script works against either
+const client = new x402Client()
+  .register("eip155:8453", new ExactEvmScheme(account))
+  .register("eip155:84532", new ExactEvmScheme(account));
 
 // Wrap fetch with x402 payment capability
 const x402Fetch = wrapFetchWithPayment(fetch, client);
