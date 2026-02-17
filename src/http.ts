@@ -187,9 +187,9 @@ function renderFrontend(): string {
     <h2>// What is this?</h2>
     <p style="font-size:0.85rem;line-height:1.6">
       An autonomous ENS registration service. Point your agent at this API,
-      pay with USDC via the <a href="https://x402.org" target="_blank">x402 payment protocol</a>,
-      and get a .eth name registered on Ethereum mainnet. No wallet connection needed &mdash;
-      the service holds an operational wallet and handles the two-step commit-reveal process.
+      pay with USDC on Base via the <a href="https://x402.org" target="_blank">x402 payment protocol</a>,
+      and get a .eth name registered on Ethereum mainnet. No need to interact with
+      ENS contracts directly &mdash; the service handles the two-step commit-reveal process for you.
     </p>
   </div>
 
