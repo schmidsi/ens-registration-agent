@@ -5,14 +5,14 @@
  * Prerequisites:
  * 1. Get Base Sepolia USDC from faucet: https://faucet.circle.com/
  * 2. Start the HTTP server: deno task http
- * 3. Run this script: deno run --env --allow-net --allow-env --allow-read scripts/test-x402.ts
+ * 3. Run this script: deno run --env --allow-net --allow-env --allow-read scripts/test-x402.ts [name] [owner] [serverUrl]
  */
 
 import { wrapFetchWithPayment, x402Client } from "npm:@x402/fetch";
 import { ExactEvmScheme } from "npm:@x402/evm/exact/client";
 import { privateKeyToAccount } from "viem/accounts";
 
-const SERVER_URL = Deno.env.get("SERVER_URL") ?? "http://localhost:3000";
+const SERVER_URL = Deno.args[2] ?? Deno.env.get("SERVER_URL") ?? "http://localhost:3000";
 
 // Wallet for x402 payments (needs Base Sepolia USDC)
 // Falls back to PRIVATE_KEY if PAYER_PRIVATE_KEY not set
@@ -35,9 +35,9 @@ const client = new x402Client()
 // Wrap fetch with x402 payment capability
 const x402Fetch = wrapFetchWithPayment(fetch, client);
 
-// Test name to register
-const testName = `test${Date.now()}.eth`;
-const owner = account.address;
+// Test name to register (override via CLI args)
+const testName = Deno.args[0] ?? `test${Date.now()}.eth`;
+const owner = Deno.args[1] ?? account.address;
 
 console.log(`\n🔍 Testing x402 flow for: ${testName}`);
 console.log(`   Owner: ${owner}`);
