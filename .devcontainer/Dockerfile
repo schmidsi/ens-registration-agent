@@ -29,6 +29,10 @@ ENV NPM_CONFIG_PREFIX=/usr/local/share/npm-global
 ENV PATH=$PATH:/usr/local/share/npm-global/bin
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
 
+# Convenience shortcut: `c` runs Claude Code with --dangerously-skip-permissions
+RUN echo '#!/bin/bash\ncd /workspace && exec claude --dangerously-skip-permissions "$@"' \
+    > /usr/local/bin/c && chmod +x /usr/local/bin/c
+
 ENV DEVCONTAINER=true
 USER node
 WORKDIR /workspace
