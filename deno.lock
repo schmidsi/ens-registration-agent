@@ -7,9 +7,11 @@
     "npm:@modelcontextprotocol/sdk@1": "1.26.0_zod@3.25.76_hono@4.11.7_ajv@8.17.1_express@5.2.1",
     "npm:@x402/core@*": "2.2.0",
     "npm:@x402/evm@*": "2.2.0_zod@3.25.76",
+    "npm:@x402/fetch@*": "2.2.0_zod@3.25.76",
     "npm:@x402/hono@*": "2.2.0_@x402+paywall@2.2.0__react@19.2.4__react-dom@19.2.4___react@19.2.4__@solana+kit@2.3.0___typescript@5.9.3__@wagmi+core@2.22.1___viem@2.45.1____zod@3.25.76____ws@8.18.3_____bufferutil@4.1.0_____utf-8-validate@5.0.10___react@19.2.4___zod@3.25.76__viem@2.45.1___zod@3.25.76___ws@8.18.3____bufferutil@4.1.0____utf-8-validate@5.0.10__@tanstack+react-query@5.90.20___react@19.2.4__wagmi@2.19.5___@tanstack+react-query@5.90.20____react@19.2.4___react@19.2.4___viem@2.45.1____zod@3.25.76____ws@8.18.3_____bufferutil@4.1.0_____utf-8-validate@5.0.10___@wagmi+core@2.22.1____viem@2.45.1_____zod@3.25.76_____ws@8.18.3______bufferutil@4.1.0______utf-8-validate@5.0.10____react@19.2.4____use-sync-external-store@1.4.0_____react@19.2.4____zod@3.25.76___use-sync-external-store@1.4.0____react@19.2.4___zod@3.25.76__zod@3.25.76_hono@4.11.7",
     "npm:@x402/paywall@*": "2.2.0_react@19.2.4_react-dom@19.2.4__react@19.2.4_@solana+kit@2.3.0__typescript@5.9.3_@wagmi+core@2.22.1__viem@2.45.1___zod@3.25.76___ws@8.18.3____bufferutil@4.1.0____utf-8-validate@5.0.10__react@19.2.4__zod@3.25.76_viem@2.45.1__zod@3.25.76__ws@8.18.3___bufferutil@4.1.0___utf-8-validate@5.0.10_@tanstack+react-query@5.90.20__react@19.2.4_wagmi@2.19.5__@tanstack+react-query@5.90.20___react@19.2.4__react@19.2.4__viem@2.45.1___zod@3.25.76___ws@8.18.3____bufferutil@4.1.0____utf-8-validate@5.0.10__@wagmi+core@2.22.1___viem@2.45.1____zod@3.25.76____ws@8.18.3_____bufferutil@4.1.0_____utf-8-validate@5.0.10___react@19.2.4___use-sync-external-store@1.4.0____react@19.2.4___zod@3.25.76__use-sync-external-store@1.4.0___react@19.2.4__zod@3.25.76_zod@3.25.76",
     "npm:hono@4": "4.11.7",
+    "npm:viem@*": "2.45.1_zod@3.25.76_ws@8.18.3__bufferutil@4.1.0__utf-8-validate@5.0.10",
     "npm:viem@2": "2.45.1_zod@3.25.76_ws@8.18.3__bufferutil@4.1.0__utf-8-validate@5.0.10",
     "npm:zod@3": "3.25.76"
   },
@@ -1951,6 +1953,14 @@
       "dependencies": [
         "@x402/core",
         "ajv",
+        "zod@3.25.76"
+      ]
+    },
+    "@x402/fetch@2.2.0_zod@3.25.76": {
+      "integrity": "sha512-oSn3jVe03rJaqbgMA33LrKFBbzelVfMtjLcE/9WIaTB0K/NLPo8xWDLMkiI9yRlaEO7sXvpMfSCDrRdkjf33gA==",
+      "dependencies": [
+        "@x402/core",
+        "viem@2.45.1_zod@3.25.76_ws@8.18.3__bufferutil@4.1.0__utf-8-validate@5.0.10",
         "zod@3.25.76"
       ]
     },
