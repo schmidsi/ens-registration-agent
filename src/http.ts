@@ -8,6 +8,8 @@ import { checkAvailability } from "./ens/availability.ts";
 import { getRegistrationPrice } from "./ens/pricing.ts";
 import { registerName } from "./ens/registration.ts";
 import { formatEther } from "viem";
+import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import { createMcpServer } from "./mcp-tools.ts";
 
 const app = new Hono();
 
@@ -43,7 +45,7 @@ const server = new x402ResourceServer(facilitatorClient).register(
 const paywall = createPaywall()
   .withNetwork(evmPaywall)
   .withConfig({
-    appName: "ENS Registration Agent",
+    appName: "ENS Registration MCP",
     testnet: isTestnet,
   })
   .build();
@@ -163,14 +165,14 @@ ${body}
 
 function renderFrontend(): string {
   const baseUrl = Deno.env.get("BASE_URL") ?? "";
-  return pageShell("ENS Registration Agent", `
-  <h1 class="glow">ENS Registration Agent</h1>
-  <p class="subtitle">Register .eth names via API &middot; Paid with USDC via <a href="https://x402.org" target="_blank">x402</a></p>
+  return pageShell("ENS Registration MCP", `
+  <h1 class="glow">ENS Registration MCP</h1>
+  <p class="subtitle">Register .eth names via API/MCP &middot; Paid with USDC on Base via <a href="https://x402.org" target="_blank">x402</a> &middot; <a href="https://github.com/schmidsi/ens-registration-agent" target="_blank">GitHub</a><br><span style="font-size:0.65rem;color:#006618">(Is it really an agent or is it a service?)</span></p>
 
   <!-- AGENT-READABLE DOCUMENTATION -->
   <!-- This service registers ENS (.eth) names on Ethereum mainnet.
        Payment is handled via x402 protocol (USDC on Base).
-       Two integration paths: HTTP API (x402) or MCP server (stdio).
+       Two integration paths: HTTP API (x402) or MCP server (Streamable HTTP at /mcp).
 
        Quick start for agents:
        1. GET /api/availability/{name}.eth  (free, no auth)
@@ -180,7 +182,8 @@ function renderFrontend(): string {
           Payment: x402 protocol auto-negotiates via 402 response header
 
        Constraints: ${MIN_NAME_LENGTH}+ character names, ${REGISTRATION_YEARS}-year registration, ~65s commit-reveal
-       MCP: Connect via stdio transport to use checkAvailability, getRegistrationPrice, registerName tools
+       MCP: Connect via Streamable HTTP at /mcp — checkAvailability and getRegistrationPrice are free,
+            registerName requires x402 payment (${SERVICE_FEE} USDC)
   -->
 
   <div class="section">
@@ -212,10 +215,10 @@ function renderFrontend(): string {
         <h3>MCP Server</h3>
         <p style="font-size:0.75rem;color:#00cc33;margin-bottom:8px">
           <a href="https://modelcontextprotocol.io" target="_blank">Model Context Protocol</a> server
-          over stdio. Connect directly from Claude, Cursor, or any MCP-compatible client.
-          Requires a co-located wallet (PRIVATE_KEY env).
+          over Streamable HTTP at <code>/mcp</code>. Connect from Claude, Cursor, or any MCP client.
+          Registration tool is paywalled via x402; lookups are free.
         </p>
-        <span class="tag">MCP</span><span class="tag">stdio</span><span class="tag">tools</span>
+        <span class="tag">MCP</span><span class="tag">HTTP</span><span class="tag">x402</span>
       </div>
     </div>
   </div>
@@ -260,24 +263,24 @@ curl -X POST ${baseUrl}/api/register \\
   <div class="section">
     <h2>// MCP Tools</h2>
     <p style="font-size:0.8rem;color:#00cc33;margin-bottom:12px">
-      Available when connected via MCP stdio transport.
+      Connect via Streamable HTTP at <code>${baseUrl}/mcp</code>
     </p>
 
     <div class="endpoint">
-      <div class="endpoint-path">checkAvailability</div>
+      <div class="endpoint-path">checkAvailability <span class="tag free">Free</span></div>
       <div class="endpoint-desc">Check if an ENS name is available for registration.</div>
       <pre><span class="cmt">params:</span> { name: <span class="str">"example.eth"</span> }</pre>
     </div>
 
     <div class="endpoint">
-      <div class="endpoint-path">getRegistrationPrice</div>
+      <div class="endpoint-path">getRegistrationPrice <span class="tag free">Free</span></div>
       <div class="endpoint-desc">Get price for registering an ENS name.</div>
       <pre><span class="cmt">params:</span> { name: <span class="str">"example.eth"</span>, years: <span class="str">1</span> }</pre>
     </div>
 
     <div class="endpoint">
-      <div class="endpoint-path">registerName</div>
-      <div class="endpoint-desc">Register an ENS name (commit-reveal, ~60s).</div>
+      <div class="endpoint-path">registerName <span class="tag paid">${SERVICE_FEE} USDC</span></div>
+      <div class="endpoint-desc">Register an ENS name (commit-reveal, ~60s). Requires x402 payment.</div>
       <pre><span class="cmt">params:</span> { name: <span class="str">"example.eth"</span>, years: <span class="str">1</span>, owner: <span class="str">"0x..."</span> }</pre>
     </div>
   </div>
@@ -335,7 +338,7 @@ curl -X POST ${baseUrl}/api/register \\
   </div>
 
   <p style="text-align:center;font-size:0.7rem;color:#003300;margin-top:32px">
-    Built with <a href="https://x402.org">x402</a> + <a href="https://docs.ens.domains">ENS</a> + <a href="https://modelcontextprotocol.io">MCP</a>
+    <a href="https://github.com/schmidsi/ens-registration-agent">Source on GitHub</a> &middot; Built with <a href="https://x402.org">x402</a> + <a href="https://docs.ens.domains">ENS</a> + <a href="https://modelcontextprotocol.io">MCP</a>
   </p>
 
   <script>
@@ -423,6 +426,115 @@ function renderError(message: string): string {
   </div>
   <p class="info" style="margin-top:16px"><a href="/">Try again</a></p>`);
 }
+
+// --- MCP over Streamable HTTP ---
+
+// Session management for stateful MCP connections
+const mcpTransports = new Map<string, WebStandardStreamableHTTPServerTransport>();
+
+// Helper: check if a JSON-RPC body contains a tools/call for registerName
+function isRegisterNameCall(body: unknown): boolean {
+  if (Array.isArray(body)) {
+    return body.some(
+      (msg) => msg?.method === "tools/call" && msg?.params?.name === "registerName"
+    );
+  }
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    (body as Record<string, unknown>).method === "tools/call" &&
+    ((body as Record<string, unknown>).params as Record<string, unknown>)?.name === "registerName"
+  );
+}
+
+// Per-tool x402 paywall middleware for MCP POST requests
+// Only registerName tool calls require payment; all other MCP messages pass through free
+app.use("/mcp", async (c, next) => {
+  if (c.req.method === "POST") {
+    const clonedReq = c.req.raw.clone();
+    let body: unknown;
+    try {
+      body = await clonedReq.json();
+    } catch {
+      // Not valid JSON — let the MCP transport handle the error
+      return next();
+    }
+    // Store parsed body for the MCP handler to avoid double-parsing
+    c.set("mcpParsedBody" as never, body as never);
+
+    if (isRegisterNameCall(body)) {
+      // Apply x402 payment middleware for registerName calls
+      const middleware = paymentMiddleware(
+        {
+          "POST /mcp": {
+            accepts: [
+              {
+                scheme: "exact",
+                price: SERVICE_FEE,
+                network,
+                payTo,
+              },
+            ],
+            description: `Register ENS name via MCP (${MIN_NAME_LENGTH}+ chars, ${REGISTRATION_YEARS} year)`,
+            mimeType: "application/json",
+          },
+        },
+        server,
+        undefined,
+        undefined,
+        false, // don't sync facilitator again (already done by the main middleware)
+      );
+      return middleware(c, next);
+    }
+  }
+  return next();
+});
+
+// MCP endpoint: POST (JSON-RPC messages), GET (SSE stream), DELETE (session termination)
+app.all("/mcp", async (c) => {
+  const sessionId = c.req.header("mcp-session-id");
+
+  if (c.req.method === "GET" || c.req.method === "DELETE") {
+    // GET/DELETE require an existing session
+    if (!sessionId || !mcpTransports.has(sessionId)) {
+      return c.json(
+        { jsonrpc: "2.0", error: { code: -32000, message: "Invalid or missing session ID" }, id: null },
+        400
+      );
+    }
+    const transport = mcpTransports.get(sessionId)!;
+    return transport.handleRequest(c.req.raw);
+  }
+
+  if (c.req.method === "POST") {
+    // Try to reuse existing session
+    if (sessionId && mcpTransports.has(sessionId)) {
+      const transport = mcpTransports.get(sessionId)!;
+      const parsedBody = c.get("mcpParsedBody" as never) as unknown;
+      return transport.handleRequest(c.req.raw, parsedBody ? { parsedBody } : undefined);
+    }
+
+    // New session: create transport and connect to MCP server
+    const transport = new WebStandardStreamableHTTPServerTransport({
+      sessionIdGenerator: () => crypto.randomUUID(),
+      onsessioninitialized: (sid) => {
+        mcpTransports.set(sid, transport);
+      },
+    });
+    transport.onclose = () => {
+      if (transport.sessionId) {
+        mcpTransports.delete(transport.sessionId);
+      }
+    };
+    const mcpServer = createMcpServer();
+    await mcpServer.connect(transport);
+
+    const parsedBody = c.get("mcpParsedBody" as never) as unknown;
+    return transport.handleRequest(c.req.raw, parsedBody ? { parsedBody } : undefined);
+  }
+
+  return c.text("Method not allowed", 405);
+});
 
 // Health check (free)
 app.get("/api/health", (c) => {
