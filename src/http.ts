@@ -9,10 +9,18 @@ import { checkAvailability } from "./ens/availability.ts";
 import { getRegistrationPrice } from "./ens/pricing.ts";
 import { registerName } from "./ens/registration.ts";
 import { formatEther } from "viem";
+import { trackEvent, trackPageView } from "./analytics.ts";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { createMcpServer } from "./mcp-tools.ts";
 
 const app = new Hono();
+
+// Umami analytics (client-side script tag)
+const umamiUrl = Deno.env.get("UMAMI_URL");
+const umamiWebsiteId = Deno.env.get("UMAMI_WEBSITE_ID");
+const umamiScript = umamiUrl && umamiWebsiteId
+  ? `<script defer src="${umamiUrl}/script.js" data-website-id="${umamiWebsiteId}"></script>`
+  : "";
 
 // Payment configuration
 const payTo = Deno.env.get("PAYMENT_ADDRESS");
@@ -157,6 +165,7 @@ function pageShell(title: string, body: string): string {
   @keyframes blink { 50% { opacity: 0; } }
   .glow { text-shadow: 0 0 10px rgba(0,255,65,0.5); }
 </style>
+${umamiScript}
 </head>
 <body>
 <div class="container">
@@ -667,6 +676,7 @@ app.get("/api/availability/:name", async (c) => {
   const name = c.req.param("name");
   try {
     const available = await checkAvailability(name);
+    trackEvent("api:availability", `/api/availability/${name}`, { name, result: available ? "available" : "taken" });
     return c.json({ name, available });
   } catch (error) {
     return c.json(
@@ -689,6 +699,7 @@ app.get("/api/price/:name", async (c) => {
   try {
     const price = await getRegistrationPrice(name, years);
     const totalWei = price.base + price.premium;
+    trackEvent("api:price", `/api/price/${name}`, { name, years, totalEth: formatEther(totalWei) });
     return c.json({
       name,
       years,
@@ -778,6 +789,7 @@ app.get("/api/register", async (c) => {
 
   try {
     const result = await registerName(name, REGISTRATION_YEARS, owner, maxPrice);
+    trackEvent("api:register", "/api/register", { name, method: "GET", result: "success" });
     const data = {
       success: true,
       name: result.name,
@@ -792,6 +804,7 @@ app.get("/api/register", async (c) => {
     }
     return c.json(data);
   } catch (error) {
+    trackEvent("api:register", "/api/register", { name: name!, method: "GET", result: "error" });
     const msg = error instanceof Error ? error.message : "Unknown error";
     return wantHtml ? c.html(renderError(msg), 500) : c.json({ error: msg }, 500);
   }
@@ -846,6 +859,7 @@ app.post("/api/register", async (c) => {
 
   try {
     const result = await registerName(name, REGISTRATION_YEARS, owner, maxPrice);
+    trackEvent("api:register", "/api/register", { name, method: "POST", result: "success" });
     return c.json({
       success: true,
       name: result.name,
@@ -856,6 +870,7 @@ app.post("/api/register", async (c) => {
       ensCostEth: formatEther(totalCost),
     });
   } catch (error) {
+    trackEvent("api:register", "/api/register", { name: name!, method: "POST", result: "error" });
     return c.json(
       { error: error instanceof Error ? error.message : "Unknown error" },
       500

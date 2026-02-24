@@ -4,6 +4,7 @@ import { checkAvailability } from "./ens/availability.ts";
 import { getRegistrationPrice } from "./ens/pricing.ts";
 import { registerName } from "./ens/registration.ts";
 import { formatEther } from "viem";
+import { trackEvent } from "./analytics.ts";
 
 export function createMcpServer(): McpServer {
   const server = new McpServer({
@@ -20,6 +21,7 @@ export function createMcpServer(): McpServer {
     async ({ name }) => {
       try {
         const available = await checkAvailability(name);
+        trackEvent("mcp:checkAvailability", "/mcp", { name, result: available ? "available" : "taken" });
         return {
           content: [
             {
@@ -55,6 +57,7 @@ export function createMcpServer(): McpServer {
       try {
         const price = await getRegistrationPrice(name, years);
         const totalWei = price.base + price.premium;
+        trackEvent("mcp:getRegistrationPrice", "/mcp", { name, years, totalEth: formatEther(totalWei) });
         return {
           content: [
             {
@@ -101,6 +104,7 @@ export function createMcpServer(): McpServer {
         const maxPrice = (totalPrice * 110n) / 100n;
 
         const result = await registerName(name, years, owner, maxPrice);
+        trackEvent("mcp:registerName", "/mcp", { name, result: "success" });
         return {
           content: [
             {
@@ -117,6 +121,7 @@ export function createMcpServer(): McpServer {
           ],
         };
       } catch (error) {
+        trackEvent("mcp:registerName", "/mcp", { name, result: "error" });
         return {
           content: [
             {
