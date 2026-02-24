@@ -198,9 +198,10 @@ Each commit should be independently revertible. Keep changes small and focused.
 
 - [x] x402 payment integration for charging callers
 - [ ] Test on Ethereum mainnet
-- [ ] Deploy (Fly.io or Railway)
-- [ ] ENS name for the agent (ens-agent.ses.eth)
-- [ ] Add to ERC-8004 registry
+- [x] Deploy (Coolify at https://ens-registration.oskamai.com)
+- [ ] ENS name for the agent (ens-registration-agent.ses.eth)
+- [x] Add to ERC-8004 registry
+  ([Base #19151](https://www.8004scan.io/agents/base/19151))
 - [ ] Marketing — list on directories (see below)
 - [ ] Extend existing names feature
 - [ ] Base names / Celo names support
