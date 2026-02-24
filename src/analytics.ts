@@ -14,7 +14,7 @@ function send(payload: Record<string, unknown>): void {
   fetch(`${UMAMI_URL}/api/send`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "User-Agent": "ens-agent/1.0" },
-    body: JSON.stringify({ payload: { ...payload, website: UMAMI_WEBSITE_ID } }),
+    body: JSON.stringify({ type: "event", payload: { ...payload, website: UMAMI_WEBSITE_ID } }),
   }).catch(() => {});
 }
 
