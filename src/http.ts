@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { serveStatic } from "hono/deno";
 import { paymentMiddleware, x402ResourceServer } from "@x402/hono";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { HTTPFacilitatorClient } from "@x402/core/server";
@@ -534,6 +535,16 @@ app.all("/mcp", async (c) => {
   }
 
   return c.text("Method not allowed", 405);
+});
+
+// Static files (icon, etc.)
+app.use("/*", serveStatic({ root: "./static" }));
+
+// ERC-8004 Agent Registration (served at .well-known)
+import agentRegistration from "../agent-registration.json" with { type: "json" };
+
+app.get("/.well-known/agent-registration.json", (c) => {
+  return c.json(agentRegistration);
 });
 
 // Health check (free)

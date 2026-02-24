@@ -1,0 +1,25 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "ENS Registration Agent",
+  "description": "Autonomous ENS (.eth) name registration service. Handles the full two-step commit-reveal process on Ethereum mainnet so you don't have to interact with ENS contracts directly. Supports names with 5+ characters, 1-year registration. Pay $6 USDC on Base via the x402 payment protocol. Available as HTTP REST API or MCP server (Streamable HTTP).",
+  "image": "https://ens-registration.oskamai.com/icon.png",
+  "services": [
+    {
+      "name": "MCP",
+      "endpoint": "https://ens-registration.oskamai.com/mcp",
+      "version": "0.1.0"
+    },
+    {
+      "name": "web",
+      "endpoint": "https://ens-registration.oskamai.com"
+    },
+    {
+      "name": "ENS",
+      "endpoint": "ens-registration-agent.ses.eth"
+    }
+  ],
+  "x402Support": true,
+  "active": true,
+  "registrations": [],
+  "supportedTrust": ["reputation", "domain-verification"]
+}
