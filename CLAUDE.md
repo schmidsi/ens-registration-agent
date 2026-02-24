@@ -36,7 +36,7 @@ cast --version    # Ethereum CLI (Foundry)
 
 ## ERC-8004 Agent Registry
 
-- **Agent ID**: 19151 on Base (chain 8453)
+- **Agent IDs**: 19151 on Base (chain 8453), 26433 on Ethereum mainnet (chain 1)
 - **Identity Registry**: `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432` (same address all chains)
 - **Owner wallet**: `0x6B4D6eaFAE2dC638e991f66825c1eb46f561537f`
 - **Registration JSON**: `agent-registration.json` (project root), served at `/.well-known/agent-registration.json`
@@ -44,13 +44,20 @@ cast --version    # Ethereum CLI (Foundry)
 
 ### Updating the on-chain registration
 
-After editing `agent-registration.json`, update on-chain:
+After editing `agent-registration.json`, update on-chain on **both** chains:
 
 ```bash
-source .env && cast send 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432 \
-  "setAgentURI(uint256,string)" 19151 \
-  "data:application/json;base64,$(jq -c . agent-registration.json | base64 -w 0)" \
+source .env && URI="data:application/json;base64,$(jq -c . agent-registration.json | base64 -w 0)"
+
+# Base
+cast send 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432 \
+  "setAgentURI(uint256,string)" 19151 "$URI" \
   --rpc-url https://mainnet.base.org --private-key $PRIVATE_KEY
+
+# Ethereum mainnet
+cast send 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432 \
+  "setAgentURI(uint256,string)" 26433 "$URI" \
+  --rpc-url "$RPC_URL" --gas-limit 400000 --private-key $PRIVATE_KEY
 ```
 
 ### 8004scan

@@ -201,7 +201,8 @@ Each commit should be independently revertible. Keep changes small and focused.
 - [x] Deploy (Coolify at https://ens-registration.oskamai.com)
 - [ ] ENS name for the agent (ens-registration-agent.ses.eth)
 - [x] Add to ERC-8004 registry
-  ([Base #19151](https://www.8004scan.io/agents/base/19151))
+  ([Base #19151](https://www.8004scan.io/agents/base/19151),
+  [Mainnet #26433](https://www.8004scan.io/agents/ethereum/26433))
 - [ ] Marketing — list on directories (see below)
 - [ ] Extend existing names feature
 - [ ] Base names / Celo names support
