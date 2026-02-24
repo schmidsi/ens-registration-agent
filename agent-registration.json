@@ -7,7 +7,8 @@
     {
       "name": "MCP",
       "endpoint": "https://ens-registration.oskamai.com/mcp",
-      "version": "0.1.0"
+      "version": "0.1.0",
+      "mcpTools": ["checkAvailability", "getRegistrationPrice", "registerName"]
     },
     {
       "name": "web",
@@ -18,8 +19,9 @@
       "endpoint": "ens-registration-agent.ses.eth"
     }
   ],
+  "agentWallet": "eip155:8453:0x6B4D6eaFAE2dC638e991f66825c1eb46f561537f",
   "x402Support": true,
   "active": true,
   "registrations": [],
-  "supportedTrust": ["reputation", "domain-verification"]
+  "supportedTrust": ["reputation"]
 }
