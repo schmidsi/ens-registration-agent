@@ -140,7 +140,9 @@ function pageShell(title: string, body: string): string {
   pre .str { color: #00ff99; }
   pre .cmt { color: #006618; }
   code { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
-  .tag { display: inline-block; border: 1px solid #00ff41; padding: 2px 8px; font-size: 0.7rem; text-transform: uppercase; margin-right: 6px; margin-bottom: 4px; }
+  .tag { display: inline-block; border: 1px solid #00ff41; padding: 2px 8px; font-size: 0.7rem; text-transform: uppercase; margin-right: 6px; margin-bottom: 4px; text-decoration: none; }
+  a > .tag { text-decoration: none; }
+  a:has(.tag) { text-decoration: none; }
   .tag.free { border-color: #00cc33; color: #00cc33; }
   .tag.paid { border-color: #ffaa00; color: #ffaa00; }
   .tag.method { border-color: #00ff41; color: #00ff41; }
@@ -166,9 +168,9 @@ ${body}
 
 function renderFrontend(): string {
   const baseUrl = Deno.env.get("BASE_URL") ?? "";
-  return pageShell("ENS Registration MCP", `
-  <h1 class="glow">ENS Registration MCP</h1>
-  <p class="subtitle">Register .eth names via API/MCP &middot; Paid with USDC on Base via <a href="https://x402.org" target="_blank">x402</a> &middot; <a href="https://github.com/schmidsi/ens-registration-agent" target="_blank">GitHub</a><br><span style="font-size:0.65rem;color:#006618">(Is it really an agent or is it a service?)</span></p>
+  return pageShell("ENS Registration Agent", `
+  <h1 class="glow">ENS Registration Agent</h1>
+  <p class="subtitle">Register .eth names via API/MCP &middot; Paid with USDC on Base via <a href="https://x402.org" target="_blank">x402</a> &middot; <a href="https://github.com/schmidsi/ens-registration-agent" target="_blank">GitHub</a><br><span style="font-size:0.65rem;color:#006618">(Is it really an agent or is it a service? Or just an MCP?)</span></p>
 
   <!-- AGENT-READABLE DOCUMENTATION -->
   <!-- This service registers ENS (.eth) names on Ethereum mainnet.
@@ -189,11 +191,21 @@ function renderFrontend(): string {
 
   <div class="section">
     <h2>// What is this?</h2>
-    <p style="font-size:0.85rem;line-height:1.6">
+    <p style="font-size:0.85rem;line-height:1.6;margin-bottom:12px">
       An autonomous ENS registration service. Point your agent at this API,
       pay with USDC on Base via the <a href="https://x402.org" target="_blank">x402 payment protocol</a>,
       and get a .eth name registered on Ethereum mainnet. No need to interact with
       ENS contracts directly &mdash; the service handles the two-step commit-reveal process for you.
+    </p>
+    <p style="font-size:0.85rem;line-height:1.6">
+      Registered on-chain as a trustless agent via
+      <a href="https://eips.ethereum.org/EIPS/eip-8004" target="_blank">ERC-8004</a>
+      on both <a href="https://www.8004scan.io/agents/ethereum/26433" target="_blank">Ethereum</a>
+      and <a href="https://www.8004scan.io/agents/base/19151" target="_blank">Base</a>.
+      Identity verified through
+      <a href="https://app.ens.domains/ens-registration-agent.ses.eth" target="_blank">ens-registration-agent.ses.eth</a>
+      via <a href="https://docs.ens.domains/ensip/25" target="_blank">ENSIP-25</a>.
+      <a href="/about">Learn how it&rsquo;s made &rarr;</a>
     </p>
   </div>
 
@@ -315,7 +327,7 @@ curl -X POST ${baseUrl}/api/register \\
     <div class="field">
       <label for="name">ENS Name</label>
       <div class="input-wrap">
-        <input type="text" id="name" placeholder="myname" autocomplete="off" autofocus>
+        <input type="text" id="name" placeholder="myname" autocomplete="off">
         <span class="suffix">.eth</span>
       </div>
       <div id="status" class="status"></div>
@@ -339,7 +351,7 @@ curl -X POST ${baseUrl}/api/register \\
   </div>
 
   <p style="text-align:center;font-size:0.7rem;color:#003300;margin-top:32px">
-    <a href="https://github.com/schmidsi/ens-registration-agent">Source on GitHub</a> &middot; Built with <a href="https://x402.org">x402</a> + <a href="https://docs.ens.domains">ENS</a> + <a href="https://modelcontextprotocol.io">MCP</a>
+    <a href="/about">How it's made</a> &middot; <a href="https://github.com/schmidsi/ens-registration-agent">GitHub</a> &middot; <a href="https://x.com/schmidsi">@schmidsi</a> &middot; <a href="https://app.ens.domains/ses.eth" target="_blank">ses.eth</a>
   </p>
 
   <script>
@@ -426,6 +438,95 @@ function renderError(message: string): string {
     <p style="color:#ff0040">${message}</p>
   </div>
   <p class="info" style="margin-top:16px"><a href="/">Try again</a></p>`);
+}
+
+function renderAbout(): string {
+  return pageShell("How it's made — ENS Registration Agent", `
+  <h1 class="glow">How it's made</h1>
+  <p class="subtitle"><a href="/">ENS Registration Agent</a> &middot; Architecture &amp; integrations</p>
+
+  <div class="section">
+    <h2>// Overview</h2>
+    <p style="font-size:0.85rem;line-height:1.6">
+      This is an autonomous ENS registration service built with Deno, viem, and ensjs.
+      It exposes both a REST API and an <a href="https://modelcontextprotocol.io" target="_blank">MCP</a> server
+      through a single HTTP process. Payments are handled via the
+      <a href="https://x402.org" target="_blank">x402 protocol</a> (USDC on Base).
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>// On-Chain Identity (ERC-8004)</h2>
+    <p style="font-size:0.85rem;line-height:1.6;margin-bottom:12px">
+      This agent is registered on the
+      <a href="https://eips.ethereum.org/EIPS/eip-8004" target="_blank">ERC-8004</a>
+      Trustless Agent Identity Registry &mdash; an on-chain standard for discovering,
+      identifying, and verifying autonomous agents.
+    </p>
+    <div class="grid">
+      <div style="border:1px solid #003300;padding:16px">
+        <h3>Ethereum Mainnet</h3>
+        <p style="font-size:0.75rem;color:#00cc33">Agent ID: <code>26433</code></p>
+        <p style="font-size:0.7rem;margin-top:4px">
+          <a href="https://www.8004scan.io/agents/ethereum/26433" target="_blank">View on 8004scan</a>
+        </p>
+      </div>
+      <div style="border:1px solid #003300;padding:16px">
+        <h3>Base</h3>
+        <p style="font-size:0.75rem;color:#00cc33">Agent ID: <code>19151</code></p>
+        <p style="font-size:0.7rem;margin-top:4px">
+          <a href="https://www.8004scan.io/agents/base/19151" target="_blank">View on 8004scan</a>
+        </p>
+      </div>
+    </div>
+    <p style="font-size:0.75rem;color:#006618;margin-top:12px">
+      Registry: <code>0x8004A169FB4a3325136EB29fA0ceB6D2e539a432</code><br>
+      Registration metadata: <a href="/.well-known/agent-registration.json"><code>/.well-known/agent-registration.json</code></a>
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>// ENS Verification (ENSIP-25)</h2>
+    <p style="font-size:0.85rem;line-height:1.6;margin-bottom:12px">
+      The agent&rsquo;s ENS name
+      <a href="https://app.ens.domains/ens-registration-agent.ses.eth" target="_blank"><code>ens-registration-agent.ses.eth</code></a>
+      is linked to both ERC-8004 registrations via
+      <a href="https://docs.ens.domains/ensip/25" target="_blank">ENSIP-25</a>
+      text records. This creates a bidirectional trust binding:
+    </p>
+    <div style="border:1px solid #003300;padding:16px;margin-bottom:12px">
+      <p style="font-size:0.8rem;color:#00ff41;margin-bottom:8px">Agent &rarr; ENS</p>
+      <p style="font-size:0.75rem;color:#00cc33">
+        The ERC-8004 registration file lists <code>ens-registration-agent.ses.eth</code>
+        as a service endpoint.
+      </p>
+    </div>
+    <div style="border:1px solid #003300;padding:16px">
+      <p style="font-size:0.8rem;color:#00ff41;margin-bottom:8px">ENS &rarr; Agent</p>
+      <p style="font-size:0.75rem;color:#00cc33">
+        The ENS name has <code>agent-registration</code> text records confirming
+        both on-chain registrations (Ethereum #26433, Base #19151).
+      </p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>// Stack</h2>
+    <div style="font-size:0.8rem;line-height:1.8;color:#00cc33">
+      <a href="https://deno.com" target="_blank"><span class="tag">Deno 2.x</span></a>
+      <a href="https://hono.dev" target="_blank"><span class="tag">Hono</span></a>
+      <a href="https://viem.sh" target="_blank"><span class="tag">viem</span></a>
+      <a href="https://github.com/ensdomains/ensjs" target="_blank"><span class="tag">ensjs v4</span></a>
+      <a href="https://modelcontextprotocol.io" target="_blank"><span class="tag">MCP SDK</span></a>
+      <a href="https://x402.org" target="_blank"><span class="tag">x402</span></a>
+      <a href="https://eips.ethereum.org/EIPS/eip-8004" target="_blank"><span class="tag">ERC-8004</span></a>
+      <a href="https://docs.ens.domains/ensip/25" target="_blank"><span class="tag">ENSIP-25</span></a>
+    </div>
+  </div>
+
+  <p style="text-align:center;font-size:0.7rem;color:#003300;margin-top:32px">
+    <a href="/">Back to agent</a> &middot; <a href="https://github.com/schmidsi/ens-registration-agent">GitHub</a> &middot; <a href="https://x.com/schmidsi">@schmidsi</a> &middot; <a href="https://app.ens.domains/ses.eth" target="_blank">ses.eth</a>
+  </p>`);
 }
 
 // --- MCP over Streamable HTTP ---
@@ -555,6 +656,10 @@ app.get("/api/health", (c) => {
 // Frontend (free)
 app.get("/", (c) => {
   return c.html(renderFrontend());
+});
+
+app.get("/about", (c) => {
+  return c.html(renderAbout());
 });
 
 // Check ENS name availability
