@@ -11,7 +11,8 @@
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SCRIPT="$(readlink -f "$0" 2>/dev/null || python3 -c "import os,sys;print(os.path.realpath(sys.argv[1]))" "$0")"
+REPO_ROOT="$(cd "$(dirname "$SCRIPT")/.." && pwd)"
 PROMPT="${1:-}"
 SSH_KEY="$HOME/.ssh/ens-agent-key"
 
