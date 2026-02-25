@@ -7,24 +7,21 @@
 #
 # Prerequisites:
 #   npm install -g @devcontainers/cli
-#   An SSH key loaded in your agent: ssh-add -t 8h /path/to/key
-#
-# The script forwards your host SSH agent into the container.
-# Load your GitHub deploy key before running:
-#   ssh-add -t 8h ~/.ssh/agent-key
+#   Passphrase-encrypted SSH key at ~/.ssh/ens-agent-key
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PROMPT="${1:-}"
+SSH_KEY="$HOME/.ssh/ens-agent-key"
 
-# --- Verify SSH agent has a key ---
-if ! ssh-add -l &>/dev/null; then
-  echo "ERROR: No SSH keys in agent. Load one first:"
-  echo "  ssh-add -t 8h /path/to/your-key"
-  exit 1
+# --- Load SSH key into agent (prompts for passphrase if not already loaded) ---
+if ssh-add -l 2>/dev/null | grep -q "$(ssh-keygen -lf "$SSH_KEY" 2>/dev/null | awk '{print $2}')"; then
+  echo "==> SSH key already in agent."
+else
+  echo "==> Loading SSH key (passphrase prompt)..."
+  ssh-add "$SSH_KEY"
 fi
-echo "==> SSH agent has keys loaded. Forwarding into container."
 
 # --- Build & start devcontainer ---
 echo "==> Building & starting devcontainer..."
