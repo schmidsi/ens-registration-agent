@@ -13,15 +13,6 @@ set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 PROMPT="${1:-}"
-SSH_KEY="$HOME/.ssh/ens-agent-key"
-
-# --- Load SSH key into agent (prompts for passphrase if not already loaded) ---
-if ssh-add -l 2>/dev/null | grep -q "$(ssh-keygen -lf "$SSH_KEY" 2>/dev/null | awk '{print $2}')"; then
-  echo "==> SSH key already in agent."
-else
-  echo "==> Loading SSH key (passphrase prompt)..."
-  ssh-add "$SSH_KEY"
-fi
 
 # --- Preflight: Docker running? ---
 if ! docker info &>/dev/null; then
@@ -33,17 +24,21 @@ fi
 echo "==> Building & starting devcontainer..."
 devcontainer up --workspace-folder "$REPO_ROOT"
 
+# --- Setup git, start ssh-agent, add key, launch Claude — all in one shell ---
+echo "==> Starting session (passphrase prompt for SSH key)..."
+if [ -n "$PROMPT" ]; then
+  CLAUDE_CMD="claude --dangerously-skip-permissions --print $(printf '%q' "$PROMPT")"
+else
+  CLAUDE_CMD="claude --dangerously-skip-permissions"
+fi
+
 devcontainer exec --workspace-folder "$REPO_ROOT" bash -c "
   mkdir -p ~/.ssh
   ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
   git config --global user.email 'simon+agent@schmid.io'
   git config --global user.name 'Simon Agent'
+  eval \$(ssh-agent -s)
+  ssh-add ~/.ssh/ens-agent-key
+  cd /workspace
+  exec $CLAUDE_CMD
 "
-
-# --- Launch Claude Code ---
-echo "==> Launching Claude Code..."
-if [ -n "$PROMPT" ]; then
-  devcontainer exec --workspace-folder "$REPO_ROOT" c --print "$PROMPT"
-else
-  devcontainer exec --workspace-folder "$REPO_ROOT" c
-fi

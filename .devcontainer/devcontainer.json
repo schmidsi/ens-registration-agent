@@ -20,13 +20,12 @@
     "source=ens-agent-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
     "source=${localEnv:HOME}/.claude,target=/home/node/.claude,type=bind",
     "source=${localWorkspaceFolder}/.env,target=/workspace/.env,type=bind,readonly",
-    "source=/run/host-services/ssh-auth.sock,target=/ssh-agent,type=bind"
+    "source=${localEnv:HOME}/.ssh/ens-agent-key,target=/home/node/.ssh/ens-agent-key,type=bind,readonly"
   ],
   "containerEnv": {
     "NODE_OPTIONS": "--max-old-space-size=4096",
     "CLAUDE_CONFIG_DIR": "/home/node/.claude",
-    "NETWORK": "${localEnv:NETWORK:mainnet}",
-    "SSH_AUTH_SOCK": "/ssh-agent"
+    "NETWORK": "${localEnv:NETWORK:mainnet}"
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
   "workspaceFolder": "/workspace",
