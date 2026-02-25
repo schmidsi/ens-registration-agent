@@ -23,6 +23,12 @@ else
   ssh-add "$SSH_KEY"
 fi
 
+# --- Preflight: Docker running? ---
+if ! docker info &>/dev/null; then
+  echo "ERROR: Docker is not running. Start Docker Desktop first."
+  exit 1
+fi
+
 # --- Build & start devcontainer ---
 echo "==> Building & starting devcontainer..."
 devcontainer up --workspace-folder "$REPO_ROOT"
