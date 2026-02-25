@@ -13,15 +13,15 @@ function send(payload: Record<string, unknown>): void {
   if (!enabled) return;
   fetch(`${UMAMI_URL}/api/send`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "User-Agent": "ens-agent/1.0" },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ type: "event", payload: { ...payload, website: UMAMI_WEBSITE_ID } }),
   }).catch(() => {});
 }
 
 export function trackPageView(url: string, referrer?: string): void {
-  send({ url, referrer, hostname: "ens-agent.ses.eth" });
+  send({ url, referrer, hostname: "ens-registration.oskamai.com" });
 }
 
 export function trackEvent(name: string, url: string, data?: Record<string, string | number>): void {
-  send({ url, hostname: "ens-agent.ses.eth", name, data });
+  send({ url, hostname: "ens-registration.oskamai.com", name, data });
 }
