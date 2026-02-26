@@ -44,6 +44,17 @@ devcontainer exec --workspace-folder "$REPO_ROOT" bash -c "
   git config --global user.name 'Simon Agent'
   eval \$(ssh-agent -s)
   ssh-add ~/.ssh/ens-agent-key
+
+  # Load .env into shell so gh, MCP servers, and bash commands can use the vars
+  set -a
+  [ -f /workspace/.env ] && source /workspace/.env
+  set +a
+
+  # Auth gh CLI via GH_TOKEN from .env (if present)
+  if [ -n \"\${GH_TOKEN:-}\" ]; then
+    echo \"\$GH_TOKEN\" | gh auth login --with-token 2>/dev/null && echo '  gh: authenticated'
+  fi
+
   cd /workspace
   exec claude --dangerously-skip-permissions
 "
