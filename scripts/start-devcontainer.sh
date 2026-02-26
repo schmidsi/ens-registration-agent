@@ -3,9 +3,7 @@
 #
 # Usage:
 #   ./dev.sh                          # interactive Claude Code session
-#   ./dev.sh "fix the bug"            # non-interactive with a prompt
-#   ./dev.sh --rebuild                # rebuild container, then interactive
-#   ./dev.sh --rebuild "fix the bug"  # rebuild container, then non-interactive
+#   ./dev.sh --rebuild                # rebuild container before starting
 #
 # Prerequisites:
 #   npm install -g @devcontainers/cli
@@ -15,13 +13,10 @@ set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 REBUILD=false
-PROMPT=""
 
 for arg in "$@"; do
   if [ "$arg" = "--rebuild" ]; then
     REBUILD=true
-  else
-    PROMPT="$arg"
   fi
 done
 
@@ -42,12 +37,6 @@ fi
 
 # --- Setup git, start ssh-agent, add key, launch Claude — all in one shell ---
 echo "==> Starting session (passphrase prompt for SSH key)..."
-if [ -n "$PROMPT" ]; then
-  CLAUDE_CMD="claude --dangerously-skip-permissions --print $(printf '%q' "$PROMPT")"
-else
-  CLAUDE_CMD="claude --dangerously-skip-permissions"
-fi
-
 devcontainer exec --workspace-folder "$REPO_ROOT" bash -c "
   mkdir -p ~/.ssh
   ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
@@ -56,5 +45,5 @@ devcontainer exec --workspace-folder "$REPO_ROOT" bash -c "
   eval \$(ssh-agent -s)
   ssh-add ~/.ssh/ens-agent-key
   cd /workspace
-  exec $CLAUDE_CMD
+  exec claude --dangerously-skip-permissions
 "
