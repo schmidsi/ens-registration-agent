@@ -2,8 +2,10 @@
 # Start the devcontainer and launch Claude Code with --dangerously-skip-permissions.
 #
 # Usage:
-#   ./scripts/start-devcontainer.sh                  # interactive Claude Code session
-#   ./scripts/start-devcontainer.sh "fix the bug"    # non-interactive with a prompt
+#   ./dev.sh                          # interactive Claude Code session
+#   ./dev.sh "fix the bug"            # non-interactive with a prompt
+#   ./dev.sh --rebuild                # rebuild container, then interactive
+#   ./dev.sh --rebuild "fix the bug"  # rebuild container, then non-interactive
 #
 # Prerequisites:
 #   npm install -g @devcontainers/cli
@@ -12,7 +14,16 @@
 set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
-PROMPT="${1:-}"
+REBUILD=false
+PROMPT=""
+
+for arg in "$@"; do
+  if [ "$arg" = "--rebuild" ]; then
+    REBUILD=true
+  else
+    PROMPT="$arg"
+  fi
+done
 
 # --- Preflight: Docker running? ---
 if ! docker info &>/dev/null; then
@@ -21,8 +32,13 @@ if ! docker info &>/dev/null; then
 fi
 
 # --- Build & start devcontainer ---
-echo "==> Building & starting devcontainer..."
-devcontainer up --workspace-folder "$REPO_ROOT"
+if [ "$REBUILD" = true ]; then
+  echo "==> Rebuilding devcontainer (--rebuild)..."
+  devcontainer up --workspace-folder "$REPO_ROOT" --remove-existing-container
+else
+  echo "==> Building & starting devcontainer..."
+  devcontainer up --workspace-folder "$REPO_ROOT"
+fi
 
 # --- Setup git, start ssh-agent, add key, launch Claude — all in one shell ---
 echo "==> Starting session (passphrase prompt for SSH key)..."
