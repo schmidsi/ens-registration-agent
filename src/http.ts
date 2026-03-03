@@ -8,6 +8,7 @@ import { evmPaywall } from "@x402/paywall/evm";
 import { checkAvailability } from "./ens/availability.ts";
 import { getRegistrationPrice } from "./ens/pricing.ts";
 import { registerName } from "./ens/registration.ts";
+import { resolveAddress } from "./ens/resolve.ts";
 import { formatEther } from "viem";
 import { trackEvent, trackPageView } from "./analytics.ts";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
@@ -344,10 +345,11 @@ curl -X POST ${baseUrl}/api/register \\
     </div>
 
     <div class="field">
-      <label for="owner">Owner Address</label>
+      <label for="owner">Owner (Address or Name)</label>
       <div class="input-wrap">
-        <input type="text" id="owner" placeholder="0x...">
+        <input type="text" id="owner" placeholder="0x... or vitalik.eth">
       </div>
+      <div id="ownerStatus" class="status"></div>
     </div>
 
     <div class="warning">
@@ -368,14 +370,19 @@ curl -X POST ${baseUrl}/api/register \\
     const ownerInput = document.getElementById("owner");
     const statusEl = document.getElementById("status");
     const priceEl = document.getElementById("price");
+    const ownerStatusEl = document.getElementById("ownerStatus");
     const btn = document.getElementById("register");
     let debounce = null;
+    let ownerDebounce = null;
     let nameAvailable = false;
+    let ownerValid = false;
+
+    const isAddress = (v) => /^0x[a-fA-F0-9]{40}$/.test(v);
+    const isName = (v) => v.includes(".") && v.length >= 3;
 
     function updateButton() {
       const label = nameInput.value.trim();
-      const owner = ownerInput.value.trim();
-      btn.disabled = !(nameAvailable && label.length >= ${MIN_NAME_LENGTH} && /^0x[a-fA-F0-9]{40}$/.test(owner));
+      btn.disabled = !(nameAvailable && label.length >= ${MIN_NAME_LENGTH} && ownerValid);
     }
 
     nameInput.addEventListener("input", () => {
@@ -417,7 +424,49 @@ curl -X POST ${baseUrl}/api/register \\
       }, 400);
     });
 
-    ownerInput.addEventListener("input", updateButton);
+    ownerInput.addEventListener("input", () => {
+      const owner = ownerInput.value.trim();
+      ownerValid = false;
+      clearTimeout(ownerDebounce);
+      if (!owner) {
+        ownerStatusEl.textContent = "";
+        updateButton();
+        return;
+      }
+      if (isAddress(owner)) {
+        ownerValid = true;
+        ownerStatusEl.textContent = "";
+        updateButton();
+        return;
+      }
+      if (isName(owner)) {
+        ownerStatusEl.textContent = "Resolving...";
+        ownerStatusEl.className = "status checking";
+        ownerDebounce = setTimeout(async () => {
+          try {
+            const res = await fetch("/api/resolve/" + encodeURIComponent(owner));
+            const data = await res.json();
+            if (ownerInput.value.trim() !== owner) return;
+            if (data.address) {
+              ownerValid = true;
+              ownerStatusEl.textContent = data.address;
+              ownerStatusEl.className = "status available";
+            } else {
+              ownerStatusEl.textContent = data.error || "Could not resolve";
+              ownerStatusEl.className = "status error";
+            }
+          } catch {
+            ownerStatusEl.textContent = "Error resolving name";
+            ownerStatusEl.className = "status error";
+          }
+          updateButton();
+        }, 400);
+      } else {
+        ownerStatusEl.textContent = "Enter an address (0x...) or a name (e.g. name.eth)";
+        ownerStatusEl.className = "status error";
+        updateButton();
+      }
+    });
 
     btn.addEventListener("click", () => {
       const name = nameInput.value.trim().toLowerCase() + ".eth";
@@ -678,6 +727,20 @@ app.get("/api/availability/:name", async (c) => {
     const available = await checkAvailability(name);
     trackEvent("api:availability", `/api/availability/${name}`, { name, result: available ? "available" : "taken" });
     return c.json({ name, available });
+  } catch (error) {
+    return c.json(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      400
+    );
+  }
+});
+
+// Resolve ENS name to ETH address (always mainnet, cointype 60)
+app.get("/api/resolve/:name", async (c) => {
+  const name = c.req.param("name");
+  try {
+    const address = await resolveAddress(name);
+    return c.json({ name, address });
   } catch (error) {
     return c.json(
       { error: error instanceof Error ? error.message : "Unknown error" },
