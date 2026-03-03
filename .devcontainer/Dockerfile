@@ -36,4 +36,5 @@ RUN echo '#!/bin/bash\ncd /workspace && exec claude --dangerously-skip-permissio
 ENV DEVCONTAINER=true
 USER node
 RUN mkdir -p ~/.ssh && chmod 700 ~/.ssh
+RUN git config --global --add safe.directory /workspace
 WORKDIR /workspace
