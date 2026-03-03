@@ -3,7 +3,7 @@ import { serveStatic } from "hono/deno";
 import { paymentMiddleware, x402ResourceServer } from "@x402/hono";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { HTTPFacilitatorClient } from "@x402/core/server";
-import { createPaywall } from "@x402/paywall";
+import { createPaywall, type PaywallNetworkHandler } from "@x402/paywall";
 import { evmPaywall } from "@x402/paywall/evm";
 import { checkAvailability } from "./ens/availability.ts";
 import { getRegistrationPrice } from "./ens/pricing.ts";
@@ -51,9 +51,40 @@ const server = new x402ResourceServer(facilitatorClient).register(
   new ExactEvmScheme()
 );
 
-// Build paywall UI for browser-based payments
+// Wrap evmPaywall to inject terminal-theme CSS
+const terminalEvmPaywall: PaywallNetworkHandler = {
+  supports: (...args) => evmPaywall.supports(...args),
+  generateHtml: (...args) => {
+    const html = evmPaywall.generateHtml(...args);
+    const customCss = `<style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
+      :root {
+        --background-color: #000;
+        --container-background-color: #0a0a0a;
+        --text-color: #00ff41;
+        --secondary-text-color: #00cc33;
+        --details-background-color: #111;
+        --details-background-color-hover: #1a1a1a;
+        --button-primary-color: #00ff41;
+        --button-primary-hover-color: #00ff99;
+        --button-secondary-color: #003300;
+        --button-secondary-hover-color: #004d00;
+        --button-positive-color: #00ff41;
+        --button-positive-hover-color: #00ff99;
+        --button-error-color: #ff0040;
+        --button-error-hover-color: #cc0033;
+      }
+      body, input, button, select, textarea {
+        font-family: 'JetBrains Mono', 'Courier New', monospace !important;
+      }
+      .container { border: 2px solid #003300; box-shadow: 0 0 20px rgba(0,255,65,0.1); }
+    </style>`;
+    return html.replace("</head>", `${customCss}\n</head>`);
+  },
+};
+
 const paywall = createPaywall()
-  .withNetwork(evmPaywall)
+  .withNetwork(terminalEvmPaywall)
   .withConfig({
     appName: "ENS Registration MCP",
     testnet: isTestnet,
