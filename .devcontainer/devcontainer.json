@@ -24,7 +24,9 @@
   "containerEnv": {
     "NODE_OPTIONS": "--max-old-space-size=4096",
     "CLAUDE_CONFIG_DIR": "/home/node/.claude",
-    "NETWORK": "${localEnv:NETWORK:mainnet}"
+    "NETWORK": "${localEnv:NETWORK:mainnet}",
+    "RPC_URL": "${localEnv:RPC_URL:https://lb.drpc.org/ogrpc?network=ethereum&dkey=Aqddx4Z48kzCoJ6EtjKYmKkdG05ovpUR8JE5QmlfqV1j}",
+    "PAYMENT_NETWORK": "${localEnv:PAYMENT_NETWORK:eip155:8453}"
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
   "workspaceFolder": "/workspace",
