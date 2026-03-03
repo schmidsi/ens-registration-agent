@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "exports": "./src/http.ts",
   "tasks": {
-    "http": "deno run --env --allow-net --allow-env --allow-read src/http.ts",
+    "http": "deno run --watch --env --allow-net --allow-env --allow-read src/http.ts",
     "test": "deno test --env --allow-net --allow-env --allow-read",
     "register": "deno run --env --allow-net --allow-env --allow-read scripts/register.ts",
     "test-x402": "deno run --env --allow-net --allow-env --allow-read scripts/test-x402.ts",
