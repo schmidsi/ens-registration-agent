@@ -77,6 +77,7 @@ const terminalEvmPaywall: PaywallNetworkHandler = {
       body, input, button, select, textarea {
         font-family: 'JetBrains Mono', 'Courier New', monospace !important;
       }
+      p { color: #00cc33 !important; }
       .container { border: 2px solid #003300; box-shadow: 0 0 20px rgba(0,255,65,0.1); }
     </style>`;
     return html.replace("</head>", `${customCss}\n</head>`);
