@@ -87,7 +87,7 @@ app.use(
           },
         ],
         description: `Register ENS name (${MIN_NAME_LENGTH}+ chars, ${REGISTRATION_YEARS} year)`,
-        mimeType: "application/json",
+        mimeType: "text/html",
       },
     },
     server,
@@ -725,7 +725,10 @@ function getLabel(name: string): string {
 app.get("/api/register", async (c) => {
   const name = c.req.query("name");
   const owner = c.req.query("owner");
-  const wantHtml = (c.req.header("accept") ?? "").includes("text/html");
+  // Default to HTML for GET requests (browser/paywall flow).
+  // Only return JSON if explicitly requested via Accept header.
+  const wantJson = (c.req.header("accept") ?? "").includes("application/json");
+  const wantHtml = !wantJson;
 
   // No query params → return API usage info (backward compatible)
   if (!name && !owner) {
