@@ -59,6 +59,7 @@ const terminalEvmPaywall: PaywallNetworkHandler = {
     const customCss = `<style>
       @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
       :root {
+        color: #00ff41;
         --background-color: #000;
         --container-background-color: #0a0a0a;
         --text-color: #00ff41;
@@ -77,7 +78,6 @@ const terminalEvmPaywall: PaywallNetworkHandler = {
       body, input, button, select, textarea {
         font-family: 'JetBrains Mono', 'Courier New', monospace !important;
       }
-      p { color: #00cc33 !important; }
       .container { border: 2px solid #003300; box-shadow: 0 0 20px rgba(0,255,65,0.1); }
     </style>`;
     return html.replace("</head>", `${customCss}\n</head>`);
